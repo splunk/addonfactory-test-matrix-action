@@ -7,6 +7,7 @@ from pathlib import Path
 import os
 import re
 import pprint
+import glob
 
 
 class LoadFromFile (argparse.Action):
@@ -22,39 +23,6 @@ def hasfeatures(features, section):
             if not value:
                 return False
     return True
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Determine support matrix")
-
-    parser.add_argument('--file', type=open, action=LoadFromFile)
-
-    parser.add_argument(
-        "--unsupportedSplunk",
-        action="store_true",
-        help="include unsupported Splunk versions",
-    )
-    parser.add_argument(
-        "--unsupportedSC4S",
-        action="store_true",
-        help="include unsupported SC4S versions",
-    )
-    parser.add_argument("--splunkfeatures", type=str, default=None, help="Required Features")
-
-    args = parser.parse_args()
-
-    path = os.path.join(Path(__file__).parent.parent, "config")
-    result = {}
-
-    supportedSplunk = _generateSupportedSplunk(args, path)
-    result['supportedSplunk']=supportedSplunk
-    pprint.pprint(supportedSplunk)
-    print(f"::set-output name=supportedSplunk::{json.dumps(supportedSplunk)}")
-
-    supportedSC4S = _generateSupportedSC4S(args, path)
-    result['supportedSC4S']=supportedSC4S
-    pprint.pprint(supportedSC4S)
-    print(f"::set-output name=supportedSC4S::{json.dumps(supportedSC4S)}")
 
 
 def _generateSupportedSplunk(args, path):
@@ -114,3 +82,43 @@ def _generateSupportedSC4S(args, path):
                 props[k] = value
             supportedSC4S.append({"version": props["version"]})
     return supportedSC4S
+
+def main():
+    parser = argparse.ArgumentParser(description="Determine support matrix")
+
+    parser.add_argument('--file', type=open, action=LoadFromFile)
+
+    parser.add_argument(
+        "--unsupportedSplunk",
+        action="store_true",
+        help="include unsupported Splunk versions",
+    )
+    parser.add_argument(
+        "--unsupportedSC4S",
+        action="store_true",
+        help="include unsupported SC4S versions",
+    )
+    parser.add_argument("--splunkfeatures", type=str, default=None, help="Required Features")
+
+    args = parser.parse_args()
+
+    path = os.path.join(Path(__file__).parent.parent, "config")
+    result = {}
+
+    supportedSplunk = _generateSupportedSplunk(args, path)
+    result['supportedSplunk']=supportedSplunk
+    #pprint.pprint(supportedSplunk)
+    print(f"::set-output name=supportedSplunk::{json.dumps(supportedSplunk)}")
+
+    supportedSC4S = _generateSupportedSC4S(args, path)
+    result['supportedSC4S']=supportedSC4S
+    #pprint.pprint(supportedSC4S)
+    print(f"::set-output name=supportedSC4S::{json.dumps(supportedSC4S)}")
+
+    # tests = [x[0] for x in os.walk('tests/')][1:]
+    # pytests = []
+    # for t in tests:
+    #     py = glob.glob(os.path.join(t, '*.py'))
+    #     if any(py):
+    #         pytests.append(t)
+    # print(pytests)
