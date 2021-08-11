@@ -16,7 +16,8 @@
 #   ######################################################################## 
 set -e
 . /venv/bin/activate
-if [[ -f METRICS_MULTI ]]; then
-    $f=--file=.addonmatrix
+if [ -f $INPUT_APP_PATH ]
+then 
+    f="--file=.addonmatrix"
 fi
 splunk-addon-matrix-gen $f $@
