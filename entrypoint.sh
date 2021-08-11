@@ -16,7 +16,7 @@
 #   ######################################################################## 
 set -e
 . /venv/bin/activate
-if [[ -d tests/ui ]]; then
+if [[ -f METRICS_MULTI ]]; then
     $f=--file=.addonmatrix
 fi
 splunk-addon-matrix-gen $f $@

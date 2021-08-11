@@ -9,5 +9,5 @@ will be automatically removed and added in the future. The following example
 configuration file indicates a version of Splunk with "METRICS_MULTI" is required.
 
 ```
- --splunkfeatures METRICS_MULTI
+--splunkfeatures METRICS_MULTI
 ```
