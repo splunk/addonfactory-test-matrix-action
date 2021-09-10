@@ -26,7 +26,10 @@ def hasfeatures(features, section):
 
 
 def _generateSupportedSplunk(args, path):
-    splunk_matrix = os.path.join(path, "splunk_matrix.conf")
+    if os.path.exists("splunk_matrix.conf"):
+        splunk_matrix="splunk_matrix.conf"
+    else:
+        splunk_matrix = os.path.join(path, "splunk_matrix.conf")
     config = configparser.ConfigParser()
     config.read(splunk_matrix)
     supportedSplunk = []
@@ -87,7 +90,6 @@ def main():
     parser = argparse.ArgumentParser(description="Determine support matrix")
 
     parser.add_argument('--file', type=open, action=LoadFromFile)
-
     parser.add_argument(
         "--unsupportedSplunk",
         action="store_true",
