@@ -71,15 +71,16 @@ def update_splunk_version(token):
         images_list = get_images_list(token)
         filter_images = filter_image_list(images_list)
         for stanza in config.sections():
-            latest_image_version = get_latest_image(stanza,images_list)
-            stanza_image_version = config.get(stanza,'VERSION')
-            
-            if check_image_version(latest_image_version,stanza_image_version):
-                config.set(stanza,'VERSION',latest_image_version)
-                latest_image_digest = get_image_digest(token,latest_image_version)
-                build_number = get_build_number(token,filter_images,latest_image_digest)
-                config.set(stanza,'BUILD',build_number)
-                update_file = True
+            if stanza != 'GENERAL':
+                latest_image_version = get_latest_image(stanza,images_list)
+                stanza_image_version = config.get(stanza,'VERSION')
+                
+                if check_image_version(latest_image_version,stanza_image_version):
+                    config.set(stanza,'VERSION',latest_image_version)
+                    latest_image_digest = get_image_digest(token,latest_image_version)
+                    build_number = get_build_number(token,filter_images,latest_image_digest)
+                    config.set(stanza,'BUILD',build_number)
+                    update_file = True
         
         if update_file:
             with open('config/splunk_matrix.conf','w') as configfile:

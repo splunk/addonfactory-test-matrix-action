@@ -19,7 +19,9 @@ else
 fi
 
 pip install pip --upgrade
-python -m pip install -r requirements.txt
+pip install poetry
+poetry export --without-hashes --dev -o requirements_dev.txt
+pip install -r requirements_dev.txt --use-deprecated=legacy-resolver || true
 splunk_version=$(python splunk_matrix_update.py)
 echo $splunk_version
 
