@@ -27,20 +27,20 @@ echo $splunk_version
 
 if [ "$splunk_version" = "True" ];
 then
-    echo "Successfully executed splunk_sync.sh"
-    # git config --global user.email "addonfactory@splunk.com"
-    # git config --global user.name "Addon Factory template"
-    # BRANCH=test/splunk-version-update
-    # git checkout -b $BRANCH
-    # git diff
-    # git add .
-    # git status
-    # git commit -m "fix: splunk build update"
-    # git push -f --set-upstream origin $BRANCH
-    # git checkout main
-    # git merge test/splunk-version-update
-    # git push origin main
-    # git branch -d test/splunk-version-update
+    
+    git config --global user.email "addonfactory@splunk.com"
+    git config --global user.name "Addon Factory template"
+    BRANCH=test/splunk-version-update
+    git checkout -b $BRANCH
+    git diff
+    git add .
+    git status
+    git commit -m "fix: splunk build update"
+    git push -f --set-upstream origin $BRANCH
+    git checkout main
+    git merge test/splunk-version-update
+    git push origin main
+    git branch -d test/splunk-version-update
 else
     echo "Splunk build update not required"
 fi
