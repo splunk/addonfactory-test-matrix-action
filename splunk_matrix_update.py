@@ -63,10 +63,10 @@ def get_build_number(token,filter_images,latest_image_digest):
             return image
 
 def update_splunk_version(token):
-    if os.path.isfile('config/splunk_matrix..conf'):
+    if os.path.isfile('config/splunk_matrix.conf'):
         config = configparser.ConfigParser()
         config.optionxform=str
-        config.read('config/splunk_matrix..conf')
+        config.read('config/splunk_matrix.conf')
         update_file = False
         images_list = get_images_list(token)
         filter_images = filter_image_list(images_list)
@@ -82,7 +82,7 @@ def update_splunk_version(token):
                 update_file = True
         
         if update_file:
-            with open('config/splunk_matrix..conf','w') as configfile:
+            with open('config/splunk_matrix.conf','w') as configfile:
                 config.write(configfile)
             return "True"
     return "False"
