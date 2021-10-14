@@ -1,8 +1,9 @@
 name: Check splunk Package Version
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 03 * * SUN"
+  push
+  # workflow_dispatch:
+  # schedule:
+  #   - cron: "0 03 * * SUN"
 
 jobs:
   build:
