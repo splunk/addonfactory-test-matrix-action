@@ -1,8 +1,9 @@
 name: Check sc4s Package Version
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 05 * * SUN"
+  push
+  # workflow_dispatch:
+  # schedule:
+  #   - cron: "0 05 * * SUN"
 
 jobs:
   build:

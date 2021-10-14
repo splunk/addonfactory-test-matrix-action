@@ -40,22 +40,22 @@ echo $var
 
 if [ "$var" = "True" ];
 then
-
-    git config --global user.email "addonfactory@splunk.com"
-    git config --global user.name "Addon Factory template"
-    BRANCH=test/sc4s-version-update
-    git checkout -b $BRANCH   
-    sed -i "s/$current_tag_value/$new_value/g" config/SC4S_matrix.conf
-    git diff
-    git add config/SC4S_matrix.conf
-    git status
-    git commit -m "fix: new sc4s version $new_value update"
-    git push -f --set-upstream origin $BRANCH
-    git log | head
-    git checkout main
-    git merge test/sc4s-version-update
-    git push origin main
-    git branch -d test/sc4s-version-update
+    echo "Executed sc4s_sync.sh"
+    # git config --global user.email "addonfactory@splunk.com"
+    # git config --global user.name "Addon Factory template"
+    # BRANCH=test/sc4s-version-update
+    # git checkout -b $BRANCH   
+    # sed -i "s/$current_tag_value/$new_value/g" config/SC4S_matrix.conf
+    # git diff
+    # git add config/SC4S_matrix.conf
+    # git status
+    # git commit -m "fix: new sc4s version $new_value update"
+    # git push -f --set-upstream origin $BRANCH
+    # git log | head
+    # git checkout main
+    # git merge test/sc4s-version-update
+    # git push origin main
+    # git branch -d test/sc4s-version-update
 else
     echo "SC4S version update not required"
 fi
