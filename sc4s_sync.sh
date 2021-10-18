@@ -40,7 +40,7 @@ echo $var
 
 if [ "$var" = "True" ];
 then
-
+    
     git config --global user.email "addonfactory@splunk.com"
     git config --global user.name "Addon Factory template"
     BRANCH=test/sc4s-version-update
