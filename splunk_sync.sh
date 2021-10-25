@@ -33,7 +33,7 @@ then
     BRANCH=test/splunk-version-update
     git checkout -b $BRANCH
     git diff
-    git add .
+    git add config/splunk_matrix.conf
     git status
     git commit -m "fix: splunk build update"
     git push -f --set-upstream origin $BRANCH
