@@ -19,13 +19,15 @@ else
 fi
 
 pip install pip --upgrade
-python -m pip install -r requirements.txt
+pip install poetry
+poetry export --without-hashes --dev -o requirements_dev.txt
+pip install -r requirements_dev.txt
 splunk_version=$(python splunk_matrix_update.py)
 echo $splunk_version
 
 if [ "$splunk_version" = "True" ];
 then
-
+    
     git config --global user.email "addonfactory@splunk.com"
     git config --global user.name "Addon Factory template"
     BRANCH=test/splunk-version-update
