@@ -41,5 +41,6 @@ jobs:
           GITHUB_USER: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GHCR_PAT }}
         run: |
+          echo $GITHUB_TOKEN | gh auth login --with-token  
           chmod +x sc4s_sync.sh
           ./sc4s_sync.sh

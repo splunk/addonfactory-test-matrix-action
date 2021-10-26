@@ -28,7 +28,7 @@ echo $splunk_version
 if [ "$splunk_version" = "True" ];
 then
     
-    git config --global user.email "addonfactory@splunk.com"
+    git config --global user.email "$GITHUB_USER"
     git config --global user.name "Addon Factory template"
     BRANCH=test/splunk-version-update
     git checkout -b $BRANCH
