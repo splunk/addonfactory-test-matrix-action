@@ -38,8 +38,7 @@ jobs:
       - name: Update Splunk Builds
         env:
           GITHUB_USER: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GHCR_PAT }}
         run: |
-          echo $GITHUB_TOKEN | gh auth login --with-token  
+          echo ${{ secrets.GHCR_PAT }} | gh auth login --with-token  
           chmod +x splunk_sync.sh
           ./splunk_sync.sh
