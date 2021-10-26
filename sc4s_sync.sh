@@ -22,3 +22,4 @@ python -m pip install packaging
 
 var=`python -c "from packaging import version; print('True' if(version.parse(str('$new_value')) > version.parse(str('$current_tag'))) else 'False')"`
 echo $var
+sed -i "s/$current_tag_value/$new_value/g" config/SC4S_matrix.conf
