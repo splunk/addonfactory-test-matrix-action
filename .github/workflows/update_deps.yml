@@ -1,4 +1,4 @@
-name: Check sc4s Package Version
+name: Check Splunk and SC4S Versions
 on:
   workflow_dispatch:
   schedule:
@@ -7,21 +7,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: [3.7]
     steps:
       - uses: actions/checkout@v2
         with:
-          submodules: true
-          persist-credentials: false
-
-      - name: Set up OS=${{ matrix.os }}::Python=${{ matrix.python-version }}
+          token: ${{ secrets.GH_TOKEN }}
+      - name: Set up Python
         uses: actions/setup-python@v2.2.2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.7"
       - name: Install HUB CLI
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
@@ -37,12 +30,13 @@ jobs:
           test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
           echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
       - name: Update SC4S Version
-        env:
-          GITHUB_USER: ${{ github.actor }}
-          GH_TOKEN_ADMIN: ${{ secrets.GH_TOKEN }}
         run: |
-          echo $GH_TOKEN_ADMIN | gh auth login --with-token  
-          git config --global user.email "$GITHUB_USER"
-          git config --global user.name "Addon Factory template"
           chmod +x sc4s_sync.sh
           ./sc4s_sync.sh
+      - name: Update Splunk Builds
+        run: |
+          chmod +x splunk_sync.sh
+          ./splunk_sync.sh
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "fix: update sc4s/splunk versions"

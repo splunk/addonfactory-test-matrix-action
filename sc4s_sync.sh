@@ -22,23 +22,3 @@ python -m pip install packaging
 
 var=`python -c "from packaging import version; print('True' if(version.parse(str('$new_value')) > version.parse(str('$current_tag'))) else 'False')"`
 echo $var
-
-if [ "$var" = "True" ];
-then
-    
-    BRANCH=test/sc4s-version-update
-    git checkout -b $BRANCH   
-    sed -i "s/$current_tag_value/$new_value/g" config/SC4S_matrix.conf
-    git diff
-    git add config/SC4S_matrix.conf
-    git status
-    git commit -m "fix: new sc4s version $new_value update"
-    git push -f --set-upstream origin $BRANCH
-    git log | head
-    git checkout main
-    git merge test/sc4s-version-update
-    git push origin main
-    git branch -d test/sc4s-version-update
-else
-    echo "SC4S version update not required"
-fi
