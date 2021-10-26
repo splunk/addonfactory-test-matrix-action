@@ -37,9 +37,11 @@ jobs:
           echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
       - name: Update Splunk Builds
         env:
-          GH_USER_ADMIN: ${{ github.actor }}
+          GITHUB_USER: ${{ github.actor }}
           GH_TOKEN_ADMIN: ${{ secrets.GH_TOKEN }}          
         run: |
-          echo ${{ secrets.GH_TOKEN_ADMIN }} | gh auth login --with-token  
+          echo $GH_TOKEN_ADMIN | gh auth login --with-token  
+          git config --global user.email "$GITHUB_USER"
+          git config --global user.name "Addon Factory template"
           chmod +x splunk_sync.sh
           ./splunk_sync.sh

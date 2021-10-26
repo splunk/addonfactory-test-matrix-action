@@ -3,21 +3,6 @@
 set -x
 
 REPOORG=splunk
-if [[  $GITHUB_USER && ${GITHUB_USER-x} ]]
-then
-    echo "GITHUB_USER Found"
-else
-    echo "GITHUB_USER Not Found"
-    exit 1
-fi
-if [[  $GITHUB_TOKEN && ${GITHUB_TOKEN-x} ]]
-then
-    echo "GITHUB_TOKEN Found"
-else
-    echo "GITHUB_TOKEN Not Found"
-    exit 1
-fi
-
 current_tag=$(cat config/SC4S_matrix.conf | grep -oP 'VERSION\s*=\s*([0-9\.]+)')
 echo $current_tag
 re='VERSION\s*=\s*([0-9.]+)'
@@ -41,8 +26,6 @@ echo $var
 if [ "$var" = "True" ];
 then
     
-    git config --global user.email "$GITHUB_USER"
-    git config --global user.name "Addon Factory template"
     BRANCH=test/sc4s-version-update
     git checkout -b $BRANCH   
     sed -i "s/$current_tag_value/$new_value/g" config/SC4S_matrix.conf

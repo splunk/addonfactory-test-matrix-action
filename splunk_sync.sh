@@ -3,20 +3,6 @@
 set -x
 
 REPOORG=splunk
-if [[  $GITHUB_USER && ${GITHUB_USER-x} ]]
-then
-    echo "GITHUB_USER Found"
-else
-    echo "GITHUB_USER Not Found"
-    exit 1
-fi
-if [[  $GITHUB_TOKEN && ${GITHUB_TOKEN-x} ]]
-then
-    echo "GITHUB_TOKEN Found"
-else
-    echo "GITHUB_TOKEN Not Found"
-    exit 1
-fi
 
 pip install pip --upgrade
 pip install poetry
