@@ -19,15 +19,15 @@ unicode_backport = ["unicodedata2"]
 
 [[package]]
 name = "configparser"
-version = "5.0.2"
+version = "5.1.0"
 description = "Updated configparser from Python 3.8 for Python 2.6+."
 category = "dev"
 optional = false
 python-versions = ">=3.6"
 
 [package.extras]
-docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
-testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "pytest-enabler", "pytest-black (>=0.3.7)", "pytest-mypy"]
+docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)", "jaraco.tidelift (>=1.4)"]
+testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [[package]]
 name = "idna"
@@ -90,7 +90,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "d5cd267a2cba2d555a7fab348d04e355243d6fda531606157dfad077893fe1fe"
+content-hash = "503d9b1580815773a561280aa10b6a1cee7cf4de271a06e567eabcd99331e39d"
 
 [metadata.files]
 certifi = [
@@ -102,8 +102,8 @@ charset-normalizer = [
     {file = "charset_normalizer-2.0.7-py3-none-any.whl", hash = "sha256:f7af805c321bfa1ce6714c51f254e0d5bb5e5834039bc17db7ebe3a4cec9492b"},
 ]
 configparser = [
-    {file = "configparser-5.0.2-py3-none-any.whl", hash = "sha256:af59f2cdd7efbdd5d111c1976ecd0b82db9066653362f0962d7bf1d3ab89a1fa"},
-    {file = "configparser-5.0.2.tar.gz", hash = "sha256:85d5de102cfe6d14a5172676f09d19c465ce63d6019cf0a4ef13385fc535e828"},
+    {file = "configparser-5.1.0-py3-none-any.whl", hash = "sha256:f99c2256b24c551de13cf9e42c7b5db96fb133f0ca4de5dcb1df1aaf89f48298"},
+    {file = "configparser-5.1.0.tar.gz", hash = "sha256:202b9679a809b703720afa2eacaad4c6c2d63196070e5d9edc953c0489dfd536"},
 ]
 idna = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
