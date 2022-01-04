@@ -12,7 +12,7 @@ python = "^3.7"
 
 [tool.poetry.dev-dependencies]
 packaging = "^21.0"
-requests = "^2.26.0"
+requests = "^2.27.0"
 configparser = "^5.0.2"
 
 [build-system]
