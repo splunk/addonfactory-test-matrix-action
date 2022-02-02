@@ -90,7 +90,7 @@ def _generateSupportedVendors(args, path):
     config = configparser.ConfigParser()
     Vendors_matrix = os.path.join(path, "/github/workspace/Vendors_matrix.conf")
     config.read(Vendors_matrix)
-    pprint(config)
+    pprint.pprint(config)
     return []
     # supportedVendors = []
     # for section in config.sections():
