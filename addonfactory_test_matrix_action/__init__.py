@@ -102,8 +102,7 @@ def _generateSupportedVendors(args, path):
                 except:
                     value = config[section][k]
                 props[k] = value
-            pprint.pprint(props)
-            supportedVendors.append({"version": props["VERSION"], "image": props["DOCKER_IMAGE"]})
+            supportedVendors.append({"version": props["version"], "image": props["docker_image"]})
     return supportedVendors
 
 def main():
