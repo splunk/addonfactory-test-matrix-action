@@ -88,7 +88,7 @@ def _generateSupportedSC4S(args, path):
 
 def _generateSupportedVendors(args, path):
     config = configparser.ConfigParser()
-    Vendors_matrix = os.path.join(path, "/github/workspace/Vendors_matrix.conf")
+    Vendors_matrix = os.path.join(path, "/github/workspace/.vendormatrix")
     config.read(Vendors_matrix)
     
     supportedVendors = []
