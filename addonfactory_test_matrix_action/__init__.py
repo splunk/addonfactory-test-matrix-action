@@ -102,6 +102,7 @@ def _generateSupportedVendors(args, path):
                 except:
                     value = config[section][k]
                 props[k] = value
+            pprint.pprint(props)
             supportedVendors.append({"version": props["VERSION"], "image": props["DOCKER_IMAGE"]})
     return supportedVendors
 
