@@ -86,6 +86,32 @@ def _generateSupportedSC4S(args, path):
             supportedSC4S.append({"version": props["version"]})
     return supportedSC4S
 
+def _generateSupportedVendors(args, path):
+    config = configparser.ConfigParser()
+    Vendors_matrix = os.path.join(path, "/github/workspace/Vendors_matrix.conf")
+    config.read(Vendors_matrix)
+    pprint(config)
+    return []
+    # supportedVendors = []
+    # for section in config.sections():
+    #     if re.search("^\d+", section):
+    #         props = {}
+    #         supported_string = config[section].get("SUPPORTED", "ROLLING")
+    #         if supported_string != "ROLLING":
+    #             eol = datetime.strptime(supported_string, "%Y-%m-%d").date()
+    #             today = datetime.now().date()
+    #             if not (args.unsupportedVendors or today <= eol):
+    #                 continue
+
+    #         for k in config[section].keys():
+    #             try:
+    #                 value = config[section].getboolean(k)
+    #             except:
+    #                 value = config[section][k]
+    #             props[k] = value
+    #         supportedVendors.append({"version": props["version"]})
+    # return supportedVendors
+
 def main():
     parser = argparse.ArgumentParser(description="Determine support matrix")
 
@@ -116,6 +142,11 @@ def main():
     result['supportedSC4S']=supportedSC4S
     #pprint.pprint(supportedSC4S)
     print(f"::set-output name=supportedSC4S::{json.dumps(supportedSC4S)}")
+
+    supportedVendors = _generateSupportedVendors(args, path)
+    result['supportedVendors']=supportedVendors
+    # pprint.pprint(supportedVendors)
+    print(f"::set-output name=supportedVendors::{json.dumps(supportedVendors)}")
 
     # tests = [x[0] for x in os.walk('tests/')][1:]
     # pytests = []
