@@ -136,7 +136,10 @@ def main():
     #pprint.pprint(supportedSC4S)
     print(f"::set-output name=supportedSC4S::{json.dumps(supportedSC4S)}")
 
-    supportedVendors = _generateSupportedVendors(args, path)
+    if os.path.exists("/github/workspace/.vendormatrix"):
+        supportedVendors = _generateSupportedVendors(args, path)
+    else:
+        supportedVendors = [{"version": "", "image": ""}]
     result['supportedVendors']=supportedVendors
     pprint.pprint(supportedVendors)
     print(f"::set-output name=supportedVendors::{json.dumps(supportedVendors)}")
