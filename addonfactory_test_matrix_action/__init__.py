@@ -141,7 +141,7 @@ def main():
     else:
         supportedVendors = [{"version": "", "image": ""}]
     result['supportedVendors']=supportedVendors
-    pprint.pprint(supportedVendors)
+    # pprint.pprint(supportedVendors)
     print(f"::set-output name=supportedVendors::{json.dumps(supportedVendors)}")
 
     # tests = [x[0] for x in os.walk('tests/')][1:]
