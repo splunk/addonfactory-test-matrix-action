@@ -86,6 +86,25 @@ def _generateSupportedSC4S(args, path):
             supportedSC4S.append({"version": props["version"]})
     return supportedSC4S
 
+def _generateSupportedVendors(args, path):
+    config = configparser.ConfigParser()
+    Vendors_matrix = os.path.join(path, "/github/workspace/.vendormatrix")
+    config.read(Vendors_matrix)
+    
+    supportedVendors = []
+    for section in config.sections():
+        if re.search("^\d+", section):
+            props = {}
+
+            for k in config[section].keys():
+                try:
+                    value = config[section].getboolean(k)
+                except:
+                    value = config[section][k]
+                props[k] = value
+            supportedVendors.append({"version": props["version"], "image": props["docker_image"]})
+    return supportedVendors
+
 def main():
     parser = argparse.ArgumentParser(description="Determine support matrix")
 
@@ -116,6 +135,14 @@ def main():
     result['supportedSC4S']=supportedSC4S
     #pprint.pprint(supportedSC4S)
     print(f"::set-output name=supportedSC4S::{json.dumps(supportedSC4S)}")
+
+    if os.path.exists("/github/workspace/.vendormatrix"):
+        supportedVendors = _generateSupportedVendors(args, path)
+    else:
+        supportedVendors = [{"version": "", "image": ""}]
+    result['supportedVendors']=supportedVendors
+    # pprint.pprint(supportedVendors)
+    print(f"::set-output name=supportedVendors::{json.dumps(supportedVendors)}")
 
     # tests = [x[0] for x in os.walk('tests/')][1:]
     # pytests = []
