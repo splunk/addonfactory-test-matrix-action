@@ -92,6 +92,8 @@ def _generateSupportedVendors(args, path):
     config.read(Vendors_matrix)
     
     supportedVendors = []
+    supportedModinputFunctionalVendors = []
+    supportedUIVendors = []
     for section in config.sections():
         if re.search("^\d+", section):
             props = {}
@@ -102,7 +104,11 @@ def _generateSupportedVendors(args, path):
                 except:
                     value = config[section][k]
                 props[k] = value
-            supportedVendors.append({"version": props["version"], "image": props["docker_image"]})
+            supportedModinputFunctionalVendors.append({"version": props["version"], "image": props["docker_image"]})
+            if props.get("trigger_ui"):
+                supportedUIVendors.append({"version": props["version"], "image": props["docker_image"]})
+
+    supportedVendors.append({"modinput_functional": supportedModinputFunctionalVendors, "ui":supportedUIVendors})
     return supportedVendors
 
 def main():
@@ -141,7 +147,7 @@ def main():
     else:
         supportedVendors = [{"version": "", "image": ""}]
     result['supportedVendors']=supportedVendors
-    # pprint.pprint(supportedVendors)
+    pprint.pprint(supportedVendors)
     print(f"::set-output name=supportedVendors::{json.dumps(supportedVendors)}")
 
     # tests = [x[0] for x in os.walk('tests/')][1:]
