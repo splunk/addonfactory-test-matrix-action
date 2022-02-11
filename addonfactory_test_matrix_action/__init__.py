@@ -108,8 +108,7 @@ def _generateSupportedVendors(args, path):
             if props.get("trigger_ui"):
                 supportedUIVendors.append({"version": props["version"], "image": props["docker_image"]})
 
-    supportedVendors.append({"modinput_functional": supportedModinputFunctionalVendors, "ui":supportedUIVendors})
-    return supportedVendors
+    return (supportedModinputFunctionalVendors, supportedUIVendors)
 
 def main():
     parser = argparse.ArgumentParser(description="Determine support matrix")
@@ -143,12 +142,15 @@ def main():
     print(f"::set-output name=supportedSC4S::{json.dumps(supportedSC4S)}")
 
     if os.path.exists("/github/workspace/.vendormatrix"):
-        supportedVendors = _generateSupportedVendors(args, path)
+        supportedModinputFunctionalVendors, supportedUIVendors = _generateSupportedVendors(args, path)
     else:
-        supportedVendors = [{"version": "", "image": ""}]
-    result['supportedVendors']=supportedVendors
-    pprint.pprint(supportedVendors)
-    print(f"::set-output name=supportedVendors::{json.dumps(supportedVendors)}")
+        supportedModinputFunctionalVendors, supportedUIVendors = ([{"version": "", "image": ""}], [{"version": "", "image": ""}])
+    result['supportedModinputFunctionalVendors']=supportedModinputFunctionalVendors
+    result['supportedUIVendors']=supportedUIVendors
+    pprint.pprint(supportedModinputFunctionalVendors)
+    pprint.pprint(supportedUIVendors)
+    print(f"::set-output name=supportedModinputFunctionalVendors::{json.dumps(supportedModinputFunctionalVendors)}")
+    print(f"::set-output name=supportedUIVendors::{json.dumps(supportedUIVendors)}")
 
     # tests = [x[0] for x in os.walk('tests/')][1:]
     # pytests = []
