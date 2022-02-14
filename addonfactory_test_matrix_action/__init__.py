@@ -103,8 +103,9 @@ def _generateSupportedVendors(args, path):
                 except:
                     value = config[section][k]
                 props[k] = value
-            supportedModinputFunctionalVendors.append({"version": props["version"], "image": props["docker_image"]})
-            if props.get("trigger_ui"):
+            if props.get("trigger_modinput_functional") != False:
+                supportedModinputFunctionalVendors.append({"version": props["version"], "image": props["docker_image"]})
+            if props.get("trigger_ui") != False:
                 supportedUIVendors.append({"version": props["version"], "image": props["docker_image"]})
 
     return (supportedModinputFunctionalVendors, supportedUIVendors)
@@ -146,8 +147,8 @@ def main():
         supportedModinputFunctionalVendors, supportedUIVendors = ([{"version": "", "image": ""}], [{"version": "", "image": ""}])
     result['supportedModinputFunctionalVendors']=supportedModinputFunctionalVendors
     result['supportedUIVendors']=supportedUIVendors
-    # pprint.pprint(supportedModinputFunctionalVendors)
-    # pprint.pprint(supportedUIVendors)
+    pprint.pprint(supportedModinputFunctionalVendors)
+    pprint.pprint(supportedUIVendors)
     print(f"::set-output name=supportedModinputFunctionalVendors::{json.dumps(supportedModinputFunctionalVendors)}")
     print(f"::set-output name=supportedUIVendors::{json.dumps(supportedUIVendors)}")
 
