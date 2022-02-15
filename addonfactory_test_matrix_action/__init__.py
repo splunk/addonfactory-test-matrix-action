@@ -91,7 +91,8 @@ def _generateSupportedVendors(args, path):
     Vendors_matrix = os.path.join(path, "/github/workspace/.vendormatrix")
     config.read(Vendors_matrix)
     
-    supportedVendors = []
+    supportedModinputFunctionalVendors = []
+    supportedUIVendors = []
     for section in config.sections():
         if re.search("^\d+", section):
             props = {}
@@ -102,8 +103,12 @@ def _generateSupportedVendors(args, path):
                 except:
                     value = config[section][k]
                 props[k] = value
-            supportedVendors.append({"version": props["version"], "image": props["docker_image"]})
-    return supportedVendors
+            if props.get("trigger_modinput_functional") != False:
+                supportedModinputFunctionalVendors.append({"version": props["version"], "image": props["docker_image"]})
+            if props.get("trigger_ui") != False:
+                supportedUIVendors.append({"version": props["version"], "image": props["docker_image"]})
+
+    return (supportedModinputFunctionalVendors, supportedUIVendors)
 
 def main():
     parser = argparse.ArgumentParser(description="Determine support matrix")
@@ -137,12 +142,15 @@ def main():
     print(f"::set-output name=supportedSC4S::{json.dumps(supportedSC4S)}")
 
     if os.path.exists("/github/workspace/.vendormatrix"):
-        supportedVendors = _generateSupportedVendors(args, path)
+        supportedModinputFunctionalVendors, supportedUIVendors = _generateSupportedVendors(args, path)
     else:
-        supportedVendors = [{"version": "", "image": ""}]
-    result['supportedVendors']=supportedVendors
-    # pprint.pprint(supportedVendors)
-    print(f"::set-output name=supportedVendors::{json.dumps(supportedVendors)}")
+        supportedModinputFunctionalVendors, supportedUIVendors = ([{"version": "", "image": ""}], [{"version": "", "image": ""}])
+    result['supportedModinputFunctionalVendors']=supportedModinputFunctionalVendors
+    result['supportedUIVendors']=supportedUIVendors
+    pprint.pprint(supportedModinputFunctionalVendors)
+    pprint.pprint(supportedUIVendors)
+    print(f"::set-output name=supportedModinputFunctionalVendors::{json.dumps(supportedModinputFunctionalVendors)}")
+    print(f"::set-output name=supportedUIVendors::{json.dumps(supportedUIVendors)}")
 
     # tests = [x[0] for x in os.walk('tests/')][1:]
     # pytests = []
