@@ -83,7 +83,9 @@ def _generateSupportedSC4S(args, path):
                 except:
                     value = config[section][k]
                 props[k] = value
-            supportedSC4S.append({"version": props["version"]})
+            if not props.get('docker_registry'):
+                props["docker_registry"] = "ghcr.io/splunk/splunk-connect-for-syslog/container"
+            supportedSC4S.append({"version": props["version"], "docker_registry": props["docker_registry"]})
     return supportedSC4S
 
 def _generateSupportedVendors(args, path):
@@ -138,7 +140,7 @@ def main():
 
     supportedSC4S = _generateSupportedSC4S(args, path)
     result['supportedSC4S']=supportedSC4S
-    #pprint.pprint(supportedSC4S)
+    pprint.pprint(supportedSC4S)
     print(f"::set-output name=supportedSC4S::{json.dumps(supportedSC4S)}")
 
     if os.path.exists("/github/workspace/.vendormatrix"):
