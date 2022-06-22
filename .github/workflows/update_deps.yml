@@ -58,7 +58,7 @@ jobs:
           BRANCH_NAME="fix/update-versions"
           ( git checkout "$BRANCH_NAME"  && git checkout main && git branch -D "$BRANCH_NAME" ) || true
           git checkout -B "$BRANCH_NAME"
-          git add .
+          git add . || exit 1
           git commit -am "fix: update sc4s/splunk versions" || exit 1
           git push -f --set-upstream origin "$BRANCH_NAME" || exit 1
           sleep 10s
