@@ -10,11 +10,12 @@ import pprint
 import glob
 
 
-class LoadFromFile (argparse.Action):
-    def __call__ (self, parser, namespace, values, option_string = None):
+class LoadFromFile(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
         with values as f:
             # parse arguments in the file and store them in the target namespace
             parser.parse_args(f.read().split(), namespace)
+
 
 def hasfeatures(features, section):
     if not features is None:
@@ -27,7 +28,7 @@ def hasfeatures(features, section):
 
 def _generateSupportedSplunk(args, path):
     if os.path.exists("splunk_matrix.conf"):
-        splunk_matrix="splunk_matrix.conf"
+        splunk_matrix = "splunk_matrix.conf"
     else:
         splunk_matrix = os.path.join(path, "splunk_matrix.conf")
     config = configparser.ConfigParser()
@@ -83,16 +84,24 @@ def _generateSupportedSC4S(args, path):
                 except:
                     value = config[section][k]
                 props[k] = value
-            if not props.get('docker_registry'):
-                props["docker_registry"] = "ghcr.io/splunk/splunk-connect-for-syslog/container"
-            supportedSC4S.append({"version": props["version"], "docker_registry": props["docker_registry"]})
+            if not props.get("docker_registry"):
+                props[
+                    "docker_registry"
+                ] = "ghcr.io/splunk/splunk-connect-for-syslog/container"
+            supportedSC4S.append(
+                {
+                    "version": props["version"],
+                    "docker_registry": props["docker_registry"],
+                }
+            )
     return supportedSC4S
+
 
 def _generateSupportedVendors(args, path):
     config = configparser.ConfigParser()
     Vendors_matrix = os.path.join(path, "/github/workspace/.vendormatrix")
     config.read(Vendors_matrix)
-    
+
     supportedModinputFunctionalVendors = []
     supportedUIVendors = []
     for section in config.sections():
@@ -106,16 +115,21 @@ def _generateSupportedVendors(args, path):
                     value = config[section][k]
                 props[k] = value
             if props.get("trigger_modinput_functional") != False:
-                supportedModinputFunctionalVendors.append({"version": props["version"], "image": props["docker_image"]})
+                supportedModinputFunctionalVendors.append(
+                    {"version": props["version"], "image": props["docker_image"]}
+                )
             if props.get("trigger_ui") != False:
-                supportedUIVendors.append({"version": props["version"], "image": props["docker_image"]})
+                supportedUIVendors.append(
+                    {"version": props["version"], "image": props["docker_image"]}
+                )
 
     return (supportedModinputFunctionalVendors, supportedUIVendors)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Determine support matrix")
 
-    parser.add_argument('--file', type=open, action=LoadFromFile)
+    parser.add_argument("--file", type=open, action=LoadFromFile)
     parser.add_argument(
         "--unsupportedSplunk",
         action="store_true",
@@ -126,38 +140,38 @@ def main():
         action="store_true",
         help="include unsupported SC4S versions",
     )
-    parser.add_argument("--splunkfeatures", type=str, default=None, help="Required Features")
+    parser.add_argument(
+        "--splunkfeatures", type=str, default=None, help="Required Features"
+    )
 
     args = parser.parse_args()
 
     path = os.path.join(Path(__file__).parent.parent, "config")
-    result = {}
 
     supportedSplunk = _generateSupportedSplunk(args, path)
-    result['supportedSplunk']=supportedSplunk
-    #pprint.pprint(supportedSplunk)
     print(f"::set-output name=supportedSplunk::{json.dumps(supportedSplunk)}")
 
+    for splunk in supportedSplunk:
+        if splunk["islatest"] == "true":
+            print(f"::set-output name=latestSplunk::{json.dumps([splunk])}")
+            break
+
     supportedSC4S = _generateSupportedSC4S(args, path)
-    result['supportedSC4S']=supportedSC4S
-    pprint.pprint(supportedSC4S)
     print(f"::set-output name=supportedSC4S::{json.dumps(supportedSC4S)}")
 
     if os.path.exists("/github/workspace/.vendormatrix"):
-        supportedModinputFunctionalVendors, supportedUIVendors = _generateSupportedVendors(args, path)
+        (
+            supportedModinputFunctionalVendors,
+            supportedUIVendors,
+        ) = _generateSupportedVendors(args, path)
     else:
-        supportedModinputFunctionalVendors, supportedUIVendors = ([{"version": "", "image": ""}], [{"version": "", "image": ""}])
-    result['supportedModinputFunctionalVendors']=supportedModinputFunctionalVendors
-    result['supportedUIVendors']=supportedUIVendors
+        supportedModinputFunctionalVendors, supportedUIVendors = (
+            [{"version": "", "image": ""}],
+            [{"version": "", "image": ""}],
+        )
     pprint.pprint(supportedModinputFunctionalVendors)
     pprint.pprint(supportedUIVendors)
-    print(f"::set-output name=supportedModinputFunctionalVendors::{json.dumps(supportedModinputFunctionalVendors)}")
+    print(
+        f"::set-output name=supportedModinputFunctionalVendors::{json.dumps(supportedModinputFunctionalVendors)}"
+    )
     print(f"::set-output name=supportedUIVendors::{json.dumps(supportedUIVendors)}")
-
-    # tests = [x[0] for x in os.walk('tests/')][1:]
-    # pytests = []
-    # for t in tests:
-    #     py = glob.glob(os.path.join(t, '*.py'))
-    #     if any(py):
-    #         pytests.append(t)
-    # print(pytests)
