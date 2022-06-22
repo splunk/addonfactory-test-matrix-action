@@ -7,7 +7,6 @@ from pathlib import Path
 import os
 import re
 import pprint
-import glob
 
 
 class LoadFromFile(argparse.Action):
@@ -152,7 +151,7 @@ def main():
     print(f"::set-output name=supportedSplunk::{json.dumps(supportedSplunk)}")
 
     for splunk in supportedSplunk:
-        if splunk["islatest"] == "true":
+        if splunk["islatest"]:
             print(f"::set-output name=latestSplunk::{json.dumps([splunk])}")
             break
 
@@ -175,3 +174,6 @@ def main():
         f"::set-output name=supportedModinputFunctionalVendors::{json.dumps(supportedModinputFunctionalVendors)}"
     )
     print(f"::set-output name=supportedUIVendors::{json.dumps(supportedUIVendors)}")
+
+
+main()
