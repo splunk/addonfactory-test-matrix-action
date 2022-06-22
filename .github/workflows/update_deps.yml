@@ -59,10 +59,10 @@ jobs:
           ( git checkout "$BRANCH_NAME"  && git checkout main && git branch -D "$BRANCH_NAME" ) || true
           git checkout -B "$BRANCH_NAME"
           git add . || exit 1
-          git commit -am "fix: update sc4s/splunk versions" || exit 1
-          git push -f --set-upstream origin "$BRANCH_NAME" || exit 1
+          git commit -am "fix: update sc4s/splunk versions" || true
+          git push -f --set-upstream origin "$BRANCH_NAME" || true
           sleep 10s
           gh pr create \
-              --title "fix: Bump sc4s/splunk versions" --fill --head "$BRANCH_NAME" || exit 1
+              --title "fix: Bump sc4s/splunk versions" --fill --head "$BRANCH_NAME" || true
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
