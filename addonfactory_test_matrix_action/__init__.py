@@ -174,6 +174,3 @@ def main():
         f"::set-output name=supportedModinputFunctionalVendors::{json.dumps(supportedModinputFunctionalVendors)}"
     )
     print(f"::set-output name=supportedUIVendors::{json.dumps(supportedUIVendors)}")
-
-
-main()

@@ -1,14 +1,8 @@
 name: Check Splunk and SC4S Versions
-#on:
-#  workflow_dispatch:
-#  schedule:
-#    - cron: "0 05 * * SUN"
-
 on:
-  push:
-    branches:
-      - main
-      - "**"
+  workflow_dispatch:
+  schedule:
+    - cron: "0 05 * * SUN"
 
 jobs:
   build:
@@ -17,10 +11,12 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
       - name: Set up Python
         uses: actions/setup-python@v2.2.2
         with:
           python-version: "3.7"
+
       - name: Install HUB CLI
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
@@ -29,18 +25,22 @@ jobs:
           test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
           echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
           brew install hub
+
       - name: Apply Configuration policy
         run: |
           test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
           test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
           test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
           echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
+
       - name: Update SC4S Version
         run: |
           ./sc4s_sync.sh
+
       - name: Update Splunk Builds
         run: |
           ./splunk_sync.sh
+
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v4
         with:
