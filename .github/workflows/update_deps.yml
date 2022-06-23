@@ -10,11 +10,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          fetch-depth: 0
+
       - name: Set up Python
         uses: actions/setup-python@v2.2.2
         with:
           python-version: "3.7"
+
       - name: Install HUB CLI
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
@@ -23,18 +25,44 @@ jobs:
           test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
           echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
           brew install hub
+
       - name: Apply Configuration policy
         run: |
           test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
           test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
           test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
           echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
+
       - name: Update SC4S Version
         run: |
           ./sc4s_sync.sh
+
       - name: Update Splunk Builds
         run: |
           ./splunk_sync.sh
-      - uses: stefanzweifel/git-auto-commit-action@v4
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v4
         with:
-          commit_message: "fix: update sc4s/splunk versions"
+          gpg_private_key: ${{ secrets.SA_GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SA_GPG_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+
+      - name: Create PR with new versions
+        run: |
+          git config --global user.email ${{ secrets.GH_USER_EMAIL }}
+          git config --global user.name ${{ secrets.GH_USER_ADMIN }}
+          git config --global commit.gpgsign true
+
+          BRANCH_NAME="fix/update-versions"
+          ( git checkout "$BRANCH_NAME"  && git checkout main && git branch -D "$BRANCH_NAME" ) || true
+          git checkout -B "$BRANCH_NAME"
+          git add . || exit 1
+          git commit -am "fix: update sc4s/splunk versions" || true
+          git push -f --set-upstream origin "$BRANCH_NAME" || true
+          sleep 10s
+          gh pr create \
+              --title "fix: Bump sc4s/splunk versions" --fill --head "$BRANCH_NAME" || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
