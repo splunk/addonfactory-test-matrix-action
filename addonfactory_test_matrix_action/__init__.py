@@ -148,14 +148,17 @@ def main():
     path = os.path.join(Path(__file__).parent.parent, "config")
 
     supportedSplunk = _generateSupportedSplunk(args, path)
+    pprint.pprint(f"Supported Splunk versions: {json.dumps(supportedSplunk)}")
     print(f"::set-output name=supportedSplunk::{json.dumps(supportedSplunk)}")
 
     for splunk in supportedSplunk:
         if splunk["islatest"]:
+            pprint.pprint(f"Latest Splunk version: {json.dumps([splunk])}")
             print(f"::set-output name=latestSplunk::{json.dumps([splunk])}")
             break
 
     supportedSC4S = _generateSupportedSC4S(args, path)
+    pprint.pprint(f"Supported SC4S versions: {json.dumps(supportedSC4S)}")
     print(f"::set-output name=supportedSC4S::{json.dumps(supportedSC4S)}")
 
     if os.path.exists("/github/workspace/.vendormatrix"):
@@ -168,8 +171,8 @@ def main():
             [{"version": "", "image": ""}],
             [{"version": "", "image": ""}],
         )
-    pprint.pprint(supportedModinputFunctionalVendors)
-    pprint.pprint(supportedUIVendors)
+    pprint.pprint(f"Supported ModInput Functional Vendors {supportedModinputFunctionalVendors}")
+    pprint.pprint(f"Supported UI Vendors {supportedUIVendors}")
     print(
         f"::set-output name=supportedModinputFunctionalVendors::{json.dumps(supportedModinputFunctionalVendors)}"
     )
