@@ -30,21 +30,18 @@ jobs:
     runs-on: ubuntu-latest
     name: Build Action
     steps:
-      # To use this repository's private action,
-      # you must check out the repository
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
-          submodules: recursive
           persist-credentials: false
       - name: Install yq
         run: sudo snap install yq
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       - name: Login to GitHub Packages Docker Registry
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -75,13 +72,10 @@ jobs:
           tags: ${{ steps.docker_action_meta.outputs.tags }}
           labels: ${{ steps.docker_action_meta.outputs.labels }}
           cache-to: type=inline
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '14'
       - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v2.6.0
+        uses: cycjimmy/semantic-release-action@v3.0.0
         with:
-          semantic_version: 19
+          semantic_version: 19.0.2
           extra_plugins: |
             @semantic-release/exec
             @semantic-release/git
@@ -93,5 +87,5 @@ jobs:
     needs: build_action
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: haya14busa/action-update-semver@v1
