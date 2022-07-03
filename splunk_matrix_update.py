@@ -1,8 +1,9 @@
-import requests
-import re
 import configparser
 import json
 import os
+import re
+
+import requests
 from packaging import version
 
 
@@ -15,7 +16,7 @@ def get_token():
 
 
 def get_images_list(token):
-    headers = {"Authorization": "Bearer {}".format(token)}
+    headers = {"Authorization": f"Bearer {token}"}
     splunk_image_list_url = "https://registry.hub.docker.com/v2/splunk/splunk/tags/list"
     response = requests.get(splunk_image_list_url, headers=headers)
     response_json = json.loads(response.text)
@@ -24,8 +25,8 @@ def get_images_list(token):
 
 def get_latest_image(stanza, images):
     stanza = stanza.split(".")
-    stanza = "\.".join(stanza)
-    regex_image = r"'{}\.\d+'|'{}\.\d+\.\d+'".format(stanza, stanza)
+    stanza = r"\.".join(stanza)
+    regex_image = rf"'{stanza}\.\d+'|'{stanza}\.\d+\.\d+'"
     filtered_images = re.findall(regex_image, str(images))
     if filtered_images:
         for i in range(len(filtered_images)):
@@ -52,11 +53,11 @@ def filter_image_list(images_list):
 
 def get_image_digest(token, image):
     headers = {
-        "Authorization": "Bearer {}".format(token),
+        "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.docker.distribution.manifest.v2+json",
     }
     image_digest_url = (
-        "https://registry.hub.docker.com/v2/splunk/splunk/manifests/{}".format(image)
+        f"https://registry.hub.docker.com/v2/splunk/splunk/manifests/{image}"
     )
     response = requests.get(image_digest_url, headers=headers)
     if response.headers["Docker-Content-Digest"]:
@@ -64,7 +65,7 @@ def get_image_digest(token, image):
     else:
         token = get_token()
         headers = {
-            "Authorization": "Bearer {}".format(token),
+            "Authorization": f"Bearer {token}",
             "Accept": "application/vnd.docker.distribution.manifest.v2+json",
         }
         image_digest_url = (

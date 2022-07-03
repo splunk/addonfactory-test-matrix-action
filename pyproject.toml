@@ -2,7 +2,7 @@
 name = "addonfactory_test_matrix_action"
 version = "0.1.0"
 description = ""
-authors = ["rfaircloth-splunk <rfaircloth@splunk.com>"]
+authors = ["Splunk <addonfactory@splunk.com>"]
 license = "Apache-2.0"
 include = [
     "config/*.conf"
