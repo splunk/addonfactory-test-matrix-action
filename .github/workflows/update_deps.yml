@@ -8,12 +8,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v2.2.2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.7"
 
@@ -47,6 +47,6 @@ jobs:
           git push -f --set-upstream origin "$BRANCH_NAME" || true
           sleep 10s
           gh pr create \
-              --title "fix: Bump sc4s/splunk versions" --fill --head "$BRANCH_NAME" || true
+              --title "fix: bump sc4s/splunk versions" --fill --head "$BRANCH_NAME" || true
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
