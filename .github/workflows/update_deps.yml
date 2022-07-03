@@ -1,6 +1,9 @@
 name: Check Splunk and SC4S Versions
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
   schedule:
     - cron: "0 05 * * SUN"
 
@@ -16,22 +19,6 @@ jobs:
         uses: actions/setup-python@v2.2.2
         with:
           python-version: "3.7"
-
-      - name: Install HUB CLI
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-          test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
-          test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-          test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
-          echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
-          brew install hub
-
-      - name: Apply Configuration policy
-        run: |
-          test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
-          test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-          test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
-          echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
 
       - name: Update SC4S Version
         run: |
