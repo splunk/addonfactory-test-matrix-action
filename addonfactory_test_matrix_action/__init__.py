@@ -113,12 +113,12 @@ def _generate_supported_vendors(args, path):
                 except:
                     value = config[section][k]
                 props[k] = value
-            if props.get("trigger_modinput_functional"):
+            if props.get("trigger_modinput_functional") is not False:
                 supported_modinput_functional_vendors.append(
                     {"version": props["version"],
                      "image": props["docker_image"]}
                 )
-            if props.get("trigger_ui"):
+            if props.get("trigger_ui") is not False:
                 supported_ui_vendors.append(
                     {"version": props["version"],
                      "image": props["docker_image"]}
