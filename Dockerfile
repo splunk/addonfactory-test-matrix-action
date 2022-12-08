@@ -1,5 +1,5 @@
 # Container image that runs your code
-FROM python:3.10.5 as base
+FROM python:3.11.1 as base
 ENV PYTHONFAULTHANDLER=1 \
     PYTHONHASHSEED=random \
     PYTHONUNBUFFERED=1
