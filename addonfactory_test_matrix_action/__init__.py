@@ -151,18 +151,20 @@ def main():
 
     supported_splunk = _generate_supported_splunk(args, path)
     pprint.pprint(f"Supported Splunk versions: {json.dumps(supported_splunk)}")
-    print(f"::set-output name=supportedSplunk::{json.dumps(supported_splunk)}")
+    with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+        print(f"supportedSplunk={json.dumps(supported_splunk)}", file=fh)
 
     for splunk in supported_splunk:
         if splunk["islatest"]:
             pprint.pprint(f"Latest Splunk version: {json.dumps([splunk])}")
-            print(f"::set-output name=latestSplunk::{json.dumps([splunk])}")
+            with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+                print(f"latestSplunk={json.dumps([splunk])}", file=fh)
             break
 
     supported_sc4s = _generate_supported_sc4s(args, path)
     pprint.pprint(f"Supported SC4S versions: {json.dumps(supported_sc4s)}")
-    print(f"::set-output name=supportedSC4S::{json.dumps(supported_sc4s)}")
-
+    with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+        print(f"supportedSC4S={json.dumps(supported_sc4s)}", file=fh)
     if os.path.exists("/github/workspace/.vendormatrix"):
         (
             supported_modinput_functional_vendors,
@@ -177,8 +179,7 @@ def main():
         f"Supported ModInput Functional Vendors {supported_modinput_functional_vendors}"
     )
     pprint.pprint(f"Supported UI Vendors {supported_ui_vendors}")
-    print(
-        f"::set-output name=supportedModinputFunctionalVendors::{json.dumps(supported_modinput_functional_vendors)}"
-    )
-    print(
-        f"::set-output name=supportedUIVendors::{json.dumps(supported_ui_vendors)}")
+    with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+        print(f"supportedModinputFunctionalVendors={json.dumps(supported_modinput_functional_vendors)}", file=fh)
+    with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+        print(f"supportedUIVendors={json.dumps(supported_ui_vendors)}", file=fh)
