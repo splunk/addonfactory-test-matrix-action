@@ -73,7 +73,7 @@ jobs:
           labels: ${{ steps.docker_action_meta.outputs.labels }}
           cache-to: type=inline
       - name: Semantic Release
-        uses: splunk/semantic-release-action@v1.2
+        uses: splunk/semantic-release-action@v1.3
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
   update-semver:
