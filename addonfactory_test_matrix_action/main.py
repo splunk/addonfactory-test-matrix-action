@@ -115,13 +115,11 @@ def _generate_supported_vendors(args, path):
                 props[k] = value
             if props.get("trigger_modinput_functional") is not False:
                 supported_modinput_functional_vendors.append(
-                    {"version": props["version"],
-                     "image": props["docker_image"]}
+                    {"version": props["version"], "image": props["docker_image"]}
                 )
             if props.get("trigger_ui") is not False:
                 supported_ui_vendors.append(
-                    {"version": props["version"],
-                     "image": props["docker_image"]}
+                    {"version": props["version"], "image": props["docker_image"]}
                 )
 
     return supported_modinput_functional_vendors, supported_ui_vendors
@@ -180,6 +178,9 @@ def main():
     )
     pprint.pprint(f"Supported UI Vendors {supported_ui_vendors}")
     with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
-        print(f"supportedModinputFunctionalVendors={json.dumps(supported_modinput_functional_vendors)}", file=fh)
+        print(
+            f"supportedModinputFunctionalVendors={json.dumps(supported_modinput_functional_vendors)}",
+            file=fh,
+        )
     with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
         print(f"supportedUIVendors={json.dumps(supported_ui_vendors)}", file=fh)
