@@ -1,5 +1,5 @@
 # action.yml
-name: "Add n Factory test matrix"
+name: "Add on factory test matrix"
 description: "This tool automates the selection matrix dimensions"
 runs:
   using: "docker"

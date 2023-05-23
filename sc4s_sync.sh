@@ -2,7 +2,6 @@
 # echo all the commands
 set -x
 
-REPOORG=splunk
 current_tag=$(cat config/SC4S_matrix.conf | grep -oP 'VERSION\s*=\s*([0-9\.]+)')
 echo $current_tag
 re='VERSION\s*=\s*([0-9.]+)'
