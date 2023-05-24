@@ -20,4 +20,4 @@ if [ -f $INPUT_APP_PATH ]
 then 
     f="--file=.addonmatrix"
 fi
-splunk-addon-matrix-gen $f $@
+python /addonfactory_test_matrix_action/main.py $f $@
