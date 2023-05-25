@@ -1,4 +1,4 @@
-FROM python:3.11.3
+FROM python:alpine
 
 RUN python -m venv /venv
 RUN . /venv/bin/activate
@@ -8,4 +8,5 @@ RUN pip install -r requirements.txt
 COPY /entrypoint.sh /
 
 WORKDIR /github/workspace
+
 ENTRYPOINT ["/entrypoint.sh"]

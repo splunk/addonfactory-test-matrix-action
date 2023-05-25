@@ -184,3 +184,7 @@ def main():
         )
     with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
         print(f"supportedUIVendors={json.dumps(supported_ui_vendors)}", file=fh)
+
+
+if __name__ == "__main__":
+    main()
