@@ -34,7 +34,7 @@ def _generate_supported_splunk(args, path):
     config.read(splunk_matrix)
     supported_splunk = []
     for section in config.sections():
-        if re.search(r"^\d+|unreleased-.*", section):
+        if re.search(r"^\d+", section):
             props = {}
             supported_splunk_string = config[section]["SUPPORTED"]
             eol = datetime.strptime(supported_splunk_string, "%Y-%m-%d").date()
