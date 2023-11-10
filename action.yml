@@ -3,4 +3,4 @@ name: "Add on factory test matrix"
 description: "This tool automates the selection matrix dimensions"
 runs:
   using: "docker"
-  image: docker://ghcr.io/splunk/addonfactory-test-matrix-action/addonfactory-test-matrix-action:v1.10.4
+  image: docker://ghcr.io/splunk/addonfactory-test-matrix-action/addonfactory-test-matrix-action:v1.12.0
