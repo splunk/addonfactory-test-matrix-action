@@ -25,6 +25,12 @@ on:
       - "main"
       - "develop"
 
+permissions:
+  contents: write
+  packages: read
+  pull-requests: read
+  statuses: write
+
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
