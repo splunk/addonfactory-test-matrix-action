@@ -36,10 +36,7 @@ def get_latest_image(stanza, images):
 
 
 def check_image_version(latest_image, stanza_image):
-    if version.parse(latest_image) > version.parse(stanza_image):
-        return True
-    else:
-        return False
+    return version.parse(latest_image) > version.parse(stanza_image)
 
 
 def filter_image_list(images_list):
