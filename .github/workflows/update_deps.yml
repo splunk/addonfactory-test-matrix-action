@@ -19,13 +19,13 @@ jobs:
           passphrase: ${{ secrets.SA_GPG_PASSPHRASE }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: Create PR with new versions
+      - name: Create PR with new version
         run: |
           git config --global user.email ${{ secrets.GH_USER_EMAIL }}
           git config --global user.name ${{ secrets.GH_USER_ADMIN }}
           git config --global commit.gpgsign true
 
-          BRANCH_NAME="fix/update-sc4s-versions"
+          BRANCH_NAME="fix/update-sc4s-version"
           ( git checkout "$BRANCH_NAME"  && git checkout main && git branch -D "$BRANCH_NAME" ) || true
           git checkout -B "$BRANCH_NAME"
           git add . || exit 1
@@ -52,20 +52,20 @@ jobs:
           passphrase: ${{ secrets.SA_GPG_PASSPHRASE }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: Create PR with new versions
+      - name: Create PR with new version
         run: |
           git config --global user.email ${{ secrets.GH_USER_EMAIL }}
           git config --global user.name ${{ secrets.GH_USER_ADMIN }}
           git config --global commit.gpgsign true
 
-          BRANCH_NAME="fix/update-splunk-versions"
+          BRANCH_NAME="fix/update-splunk-version"
           ( git checkout "$BRANCH_NAME"  && git checkout main && git branch -D "$BRANCH_NAME" ) || true
           git checkout -B "$BRANCH_NAME"
           git add . || exit 1
-          git commit -am "fix: update Splunk versions" || true
+          git commit -am "fix: update Splunk version" || true
           git push -f --set-upstream origin "$BRANCH_NAME" || true
           sleep 10s
           gh pr create \
-              --title "fix: bump Splunk versions" --fill --head "$BRANCH_NAME" || true
+              --title "fix: bump Splunk version" --fill --head "$BRANCH_NAME" || true
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
