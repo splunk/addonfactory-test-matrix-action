@@ -4,44 +4,68 @@ on:
     - cron: "0 05 * * SUN"
 
 jobs:
-  build:
+  sc4s:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v5
-        with:
-          python-version: "3.7"
-      - name: Update SC4S Version
-        run: |
-          ./sc4s_sync.sh
-      - name: Update Splunk Builds
-        run: |
-          ./splunk_sync.sh
+      - run: ./sc4s_sync.sh
       - uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.SA_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.SA_GPG_PASSPHRASE }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: Create PR with new versions
+      - name: Create PR with new version
         run: |
           git config --global user.email ${{ secrets.GH_USER_EMAIL }}
           git config --global user.name ${{ secrets.GH_USER_ADMIN }}
           git config --global commit.gpgsign true
 
-          BRANCH_NAME="fix/update-versions"
+          BRANCH_NAME="fix/update-sc4s-version"
           ( git checkout "$BRANCH_NAME"  && git checkout main && git branch -D "$BRANCH_NAME" ) || true
           git checkout -B "$BRANCH_NAME"
           git add . || exit 1
-          git commit -am "fix: update sc4s/splunk versions" || true
+          git commit -am "fix: update SC4S version" || true
           git push -f --set-upstream origin "$BRANCH_NAME" || true
           sleep 10s
           gh pr create \
-              --title "fix: bump sc4s/splunk versions" --fill --head "$BRANCH_NAME" || true
+              --title "fix: bump SC4S version" --fill --head "$BRANCH_NAME" || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
+
+  splunk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - run: ./splunk_sync.sh
+      - uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.SA_GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SA_GPG_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+      - name: Create PR with new version
+        run: |
+          git config --global user.email ${{ secrets.GH_USER_EMAIL }}
+          git config --global user.name ${{ secrets.GH_USER_ADMIN }}
+          git config --global commit.gpgsign true
+
+          BRANCH_NAME="fix/update-splunk-version"
+          ( git checkout "$BRANCH_NAME"  && git checkout main && git branch -D "$BRANCH_NAME" ) || true
+          git checkout -B "$BRANCH_NAME"
+          git add . || exit 1
+          git commit -am "fix: update Splunk version" || true
+          git push -f --set-upstream origin "$BRANCH_NAME" || true
+          sleep 10s
+          gh pr create \
+              --title "fix: bump Splunk version" --fill --head "$BRANCH_NAME" || true
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
