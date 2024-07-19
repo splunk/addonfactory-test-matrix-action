@@ -10,6 +10,7 @@ from packaging import version
 def get_token():
     splunk_token_url = "https://auth.docker.io/token?service=registry.docker.io&scope=repository:splunk/splunk:pull"
     response = requests.get(splunk_token_url)
+    response.raise_for_status()
     response_json = json.loads(response.text)
     token = response_json["token"]
     return token
@@ -19,6 +20,7 @@ def get_images_list(token):
     headers = {"Authorization": f"Bearer {token}"}
     splunk_image_list_url = "https://registry.hub.docker.com/v2/splunk/splunk/tags/list"
     response = requests.get(splunk_image_list_url, headers=headers)
+    response.raise_for_status()
     response_json = json.loads(response.text)
     return response_json["tags"]
 
@@ -57,6 +59,7 @@ def get_image_digest(token, image):
         f"https://registry.hub.docker.com/v2/splunk/splunk/manifests/{image}"
     )
     response = requests.get(image_digest_url, headers=headers)
+    response.raise_for_status()
     if response.headers["Docker-Content-Digest"]:
         return response.headers["Docker-Content-Digest"]
     else:
@@ -71,6 +74,7 @@ def get_image_digest(token, image):
             )
         )
         response = requests.get(image_digest_url, headers=headers)
+        response.raise_for_status()
         return response.headers["Docker-Content-Digest"]
 
 
