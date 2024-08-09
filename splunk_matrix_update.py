@@ -57,12 +57,14 @@ def filter_image_list(images_list):
 
 def get_build_number_1(token, latest_image_digest):
     _, image_lists = get_images_list(token)
+    # images_list = [d["name"] for d in image_lists]
+    # images_list = filter_image_list(images_list)
     match_and_return_name = next(
         (
             d["name"]
             for d in image_lists
             for image in d.get("images", [])
-            if image["digest"] == latest_image_digest
+            if image["digest"] == latest_image_digest and re.match(r"'[0-9a-z]{12}'", d["name"])
         ),
         None,
     )
