@@ -51,7 +51,7 @@ jobs:
           python-version: 3.12
       - run: |
           pip install -r requirements.txt
-          splunk_version=$(python splunk_matrix_update.py)
+          python splunk_matrix_update.py
           echo $splunk_version
       - uses: crazy-max/ghaction-import-gpg@v6
         with:
