@@ -22,7 +22,9 @@ def get_images_list(token):
     # response = requests.get(splunk_image_list_url, headers=headers)
     # response.raise_for_status()
     # response_json = json.loads(response.text)
-    all_details = "https://hub.docker.com/v2/repositories/splunk/splunk/tags?page_size=100"
+    all_details = (
+        "https://hub.docker.com/v2/repositories/splunk/splunk/tags?page_size=100"
+    )
     response = requests.get(all_details)
     all_details = json.loads(response.content)
     return all_details["results"]
@@ -52,10 +54,20 @@ def filter_image_list(images_list):
             filter_images[i] = filter_images[i].replace("'", "")
         return filter_images
 
+
 def get_build_number_1(token, latest_image_digest):
     image_lists = get_images_list(token)
-    match_and_return_name = next((d['name'] for d in image_lists for image in d.get('images', []) if image['digest'] == latest_image_digest), None)
+    match_and_return_name = next(
+        (
+            d["name"]
+            for d in image_lists
+            for image in d.get("images", [])
+            if image["digest"] == latest_image_digest
+        ),
+        None,
+    )
     return match_and_return_name
+
 
 def get_image_digest(token, image):
     headers = {
@@ -99,19 +111,20 @@ def update_splunk_version(token):
         update_file = False
         all_images = get_images_list(token)
         # filter_images = filter_image_list(images_list)
-        images_list = [d['name'] for d in all_images]
+        images_list = [d["name"] for d in all_images]
         for stanza in config.sections():
             if stanza != "GENERAL":
+                print(images_list)
                 latest_image_version = get_latest_image(stanza, images_list)
                 stanza_image_version = config.get(stanza, "VERSION")
-
+                print(latest_image_version,stanza_image_version)
                 if check_image_version(latest_image_version, stanza_image_version):
                     config.set(stanza, "VERSION", latest_image_version)
                     latest_image_digest = get_image_digest(token, latest_image_version)
                     # build_number = get_build_number(
                     #     token, filter_images, latest_image_digest
                     # )
-                    build_number = get_build_number_1(token,latest_image_digest)
+                    build_number = get_build_number_1(token, latest_image_digest)
                     config.set(stanza, "BUILD", build_number)
                     update_file = True
 
