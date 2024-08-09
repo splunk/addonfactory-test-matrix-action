@@ -126,7 +126,9 @@ def update_splunk_version(token):
                     # build_number = get_build_number(
                     #     token, filter_images, latest_image_digest
                     # )
+                    print(latest_image_digest)
                     build_number = get_build_number_1(token, latest_image_digest)
+                    print(build_number)
                     config.set(stanza, "BUILD", build_number)
                     update_file = True
 
