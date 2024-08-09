@@ -17,17 +17,17 @@ def get_token():
 
 
 def get_images_list(token):
-    # headers = {"Authorization": f"Bearer {token}"}
-    # splunk_image_list_url = "https://registry.hub.docker.com/v2/splunk/splunk/tags/list"
-    # response = requests.get(splunk_image_list_url, headers=headers)
-    # response.raise_for_status()
-    # response_json = json.loads(response.text)
+    headers = {"Authorization": f"Bearer {token}"}
+    splunk_image_list_url = "https://registry.hub.docker.com/v2/splunk/splunk/tags/list"
+    response = requests.get(splunk_image_list_url, headers=headers)
+    response.raise_for_status()
+    response_json = json.loads(response.text)
     all_details = (
         "https://hub.docker.com/v2/repositories/splunk/splunk/tags?page_size=100"
     )
     response = requests.get(all_details)
     all_details = json.loads(response.content)
-    return all_details["results"]
+    return response_json["tags"], all_details["results"]
 
 
 def get_latest_image(stanza, images):
@@ -56,7 +56,7 @@ def filter_image_list(images_list):
 
 
 def get_build_number_1(token, latest_image_digest):
-    image_lists = get_images_list(token)
+    _, image_lists = get_images_list(token)
     match_and_return_name = next(
         (
             d["name"]
@@ -109,9 +109,9 @@ def update_splunk_version(token):
         config.optionxform = str
         config.read("config/splunk_matrix.conf")
         update_file = False
-        all_images = get_images_list(token)
+        images_list, all_images = get_images_list(token)
         # filter_images = filter_image_list(images_list)
-        images_list = [d["name"] for d in all_images]
+        # images_list = [d["name"] for d in all_images]
         for stanza in config.sections():
             if stanza != "GENERAL":
                 print(images_list)
