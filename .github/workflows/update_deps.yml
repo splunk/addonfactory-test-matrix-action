@@ -49,8 +49,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.12
-      - id: check-latest-splunk
-      - run: |
+      - name: check for latest version
+        id: check-latest-splunk
+        run: |
           pip install -r requirements.txt
           splunk_version=$(python splunk_matrix_update.py)
           echo "splunk_version=splunk_version" >> "$GITHUB_OUTPUT"
