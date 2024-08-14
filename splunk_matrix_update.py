@@ -34,7 +34,7 @@ def get_latest_image(stanza: str, images: List[Dict]) -> Optional[str]:
     """
     stanza_regex = r"\.".join(re.escape(part) for part in stanza.split("."))
     regex_image = rf"{stanza_regex}\.\d+|{stanza_regex}\.\d+\.\d+"
-    versions = [image['name'] for image in images]
+    versions = [image["name"] for image in images]
     filtered_images = re.findall(regex_image, str(versions))
 
     if filtered_images:
@@ -74,7 +74,8 @@ def get_build_number(latest_image_digest: str, image_list: List[Dict]) -> Option
             d["name"]
             for d in image_list
             for image in d.get("images", [])
-            if image["digest"] == latest_image_digest and re.match(r"[0-9a-z]{12}", d["name"])
+            if image["digest"] == latest_image_digest
+            and re.match(r"[0-9a-z]{12}", d["name"])
         ),
         None,
     )
@@ -93,12 +94,12 @@ def get_image_digest(image: str, image_list: List[Dict]) -> Optional[str]:
     """
     return next(
         (
-            image_data['digest']
+            image_data["digest"]
             for d in image_list
-            if d['name'] == image
-            for image_data in d.get('images', [])
+            if d["name"] == image
+            for image_data in d.get("images", [])
         ),
-        None
+        None,
     )
 
 
@@ -126,8 +127,12 @@ def update_splunk_version() -> str:
                     stanza_image_version = config.get(stanza, "VERSION")
 
                     if check_image_version(latest_image_version, stanza_image_version):
-                        latest_image_digest = get_image_digest(latest_image_version, all_images_list)
-                        build_number = get_build_number(latest_image_digest, all_images_list)
+                        latest_image_digest = get_image_digest(
+                            latest_image_version, all_images_list
+                        )
+                        build_number = get_build_number(
+                            latest_image_digest, all_images_list
+                        )
 
                         config.set(stanza, "VERSION", latest_image_version)
                         if build_number:
