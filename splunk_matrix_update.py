@@ -44,7 +44,7 @@ def get_latest_image(stanza: str, images: List[Dict]) -> Optional[str]:
     return None
 
 
-def check_image_version(latest_image: str, stanza_image: str) -> bool:
+def is_latest_image(latest_image: str, stanza_image: str) -> bool:
     """
     Compares two version strings to determine if the latest image version is newer.
 
@@ -126,7 +126,7 @@ def update_splunk_version() -> str:
                 if latest_image_version:
                     stanza_image_version = config.get(stanza, "VERSION")
 
-                    if check_image_version(latest_image_version, stanza_image_version):
+                    if is_latest_image(latest_image_version, stanza_image_version):
                         latest_image_digest = get_image_digest(
                             latest_image_version, all_images_list
                         )
