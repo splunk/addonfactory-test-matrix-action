@@ -2,114 +2,151 @@ import configparser
 import json
 import os
 import re
-
-import requests
 from packaging import version
+import requests
+from typing import List, Dict, Optional
 
 
-def get_token():
-    splunk_token_url = "https://auth.docker.io/token?service=registry.docker.io&scope=repository:splunk/splunk:pull"
-    response = requests.get(splunk_token_url)
-    response_json = json.loads(response.text)
-    token = response_json["token"]
-    return token
+def get_images_details() -> List[Dict]:
+    """
+    Fetches the details of images from the Docker Hub Splunk repository.
+
+    Returns:
+        List[Dict]: A list of dictionaries containing details about each image tag.
+    """
+    get_images_details_endpoint = "https://hub.docker.com/v2/repositories/splunk/splunk/tags?page_size=1000&ordering=last_updated"
+    image_details_response = requests.get(get_images_details_endpoint)
+    image_details_response.raise_for_status()
+    image_details = image_details_response.json()["results"]
+    return image_details
 
 
-def get_images_list(token):
-    headers = {"Authorization": f"Bearer {token}"}
-    splunk_image_list_url = "https://registry.hub.docker.com/v2/splunk/splunk/tags/list"
-    response = requests.get(splunk_image_list_url, headers=headers)
-    response_json = json.loads(response.text)
-    return response_json["tags"]
+def get_latest_image(stanza: str, images: List[Dict]) -> Optional[str]:
+    """
+    Finds the latest image version that matches the given stanza version.
 
+    Args:
+        stanza (str): The version string from the config file.
+        images (List[Dict]): A list of dictionaries containing image details.
 
-def get_latest_image(stanza, images):
-    stanza = stanza.split(".")
-    stanza = r"\.".join(stanza)
-    regex_image = rf"'{stanza}\.\d+'|'{stanza}\.\d+\.\d+'"
-    filtered_images = re.findall(regex_image, str(images))
+    Returns:
+        Optional[str]: The latest image version that matches the stanza pattern, or None if no match is found.
+    """
+    stanza_regex = r"\.".join(re.escape(part) for part in stanza.split("."))
+    regex_image = rf"{stanza_regex}\.\d+|{stanza_regex}\.\d+\.\d+"
+    versions = [image["name"] for image in images]
+    filtered_images = re.findall(regex_image, str(versions))
+
     if filtered_images:
-        for i in range(len(filtered_images)):
-            filtered_images[i] = filtered_images[i].replace("'", "")
+        filtered_images = [image.replace("'", "") for image in filtered_images]
         filtered_images.sort(key=lambda s: list(map(int, s.split("."))))
         return filtered_images[-1]
+    return None
 
 
-def check_image_version(latest_image, stanza_image):
+def is_latest_image(latest_image: str, stanza_image: str) -> bool:
+    """
+    Compares two version strings to determine if the latest image version is newer.
+
+    Args:
+        latest_image (str): The latest image version.
+        stanza_image (str): The current image version from the config file.
+
+    Returns:
+        bool: True if the latest image version is newer, False otherwise.
+    """
     return version.parse(latest_image) > version.parse(stanza_image)
 
 
-def filter_image_list(images_list):
-    regex_filter_images = r"\'[0-9a-z]{12}\'"
-    filter_images = re.findall(regex_filter_images, str(images_list))
-    if filter_images:
-        for i in range(len(filter_images)):
-            filter_images[i] = filter_images[i].replace("'", "")
-        return filter_images
+def get_build_number(latest_image_digest: str, image_list: List[Dict]) -> Optional[str]:
+    """
+    Retrieves the build number which is SHA corresponding to the latest image digest.
 
+    Args:
+        latest_image_digest (str): The digest of the latest image.
+        image_list (List[Dict]): A list of dictionaries containing image details.
 
-def get_image_digest(token, image):
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/vnd.docker.distribution.manifest.v2+json",
-    }
-    image_digest_url = (
-        f"https://registry.hub.docker.com/v2/splunk/splunk/manifests/{image}"
+    Returns:
+        Optional[str]: The build number if found, None otherwise.
+    """
+    return next(
+        (
+            d["name"]
+            for d in image_list
+            for image in d.get("images", [])
+            if image["digest"] == latest_image_digest
+            and re.match(r"[0-9a-z]{12}", d["name"])
+        ),
+        None,
     )
-    response = requests.get(image_digest_url, headers=headers)
-    if response.headers["Docker-Content-Digest"]:
-        return response.headers["Docker-Content-Digest"]
-    else:
-        token = get_token()
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Accept": "application/vnd.docker.distribution.manifest.v2+json",
-        }
-        image_digest_url = (
-            "https://registry.hub.docker.com/v2/splunk/splunk/manifests/{}".format(
-                image
-            )
-        )
-        response = requests.get(image_digest_url, headers=headers)
-        return response.headers["Docker-Content-Digest"]
 
 
-def get_build_number(token, filter_images, latest_image_digest):
-    for image in filter_images:
-        if get_image_digest(token, image) == latest_image_digest:
-            return image
+def get_image_digest(image: str, image_list: List[Dict]) -> Optional[str]:
+    """
+    Retrieves the digest for a specific image version.
+
+    Args:
+        image (str): The name of the image version.
+        image_list (List[Dict]): A list of dictionaries containing image details.
+
+    Returns:
+        Optional[str]: The digest of the image if found, None otherwise.
+    """
+    return next(
+        (
+            image_data["digest"]
+            for d in image_list
+            if d["name"] == image
+            for image_data in d.get("images", [])
+        ),
+        None,
+    )
 
 
-def update_splunk_version(token):
-    if os.path.isfile("config/splunk_matrix.conf"):
+def update_splunk_version() -> str:
+    """
+    Updates the Splunk version in the config file if a newer version is available.
+
+    Returns:
+        str: "True" if the config file was updated, "False" otherwise.
+    """
+    config_path = "config/splunk_matrix.conf"
+
+    if os.path.isfile(config_path):
         config = configparser.ConfigParser()
         config.optionxform = str
-        config.read("config/splunk_matrix.conf")
+        config.read(config_path)
         update_file = False
-        images_list = get_images_list(token)
-        filter_images = filter_image_list(images_list)
+        all_images_list = get_images_details()
+
         for stanza in config.sections():
             if stanza != "GENERAL":
-                latest_image_version = get_latest_image(stanza, images_list)
-                stanza_image_version = config.get(stanza, "VERSION")
+                latest_image_version = get_latest_image(stanza, all_images_list)
 
-                if check_image_version(latest_image_version, stanza_image_version):
-                    config.set(stanza, "VERSION", latest_image_version)
-                    latest_image_digest = get_image_digest(token, latest_image_version)
-                    build_number = get_build_number(
-                        token, filter_images, latest_image_digest
-                    )
-                    config.set(stanza, "BUILD", build_number)
-                    update_file = True
+                if latest_image_version:
+                    stanza_image_version = config.get(stanza, "VERSION")
+
+                    if is_latest_image(latest_image_version, stanza_image_version):
+                        latest_image_digest = get_image_digest(
+                            latest_image_version, all_images_list
+                        )
+                        build_number = get_build_number(
+                            latest_image_digest, all_images_list
+                        )
+
+                        config.set(stanza, "VERSION", latest_image_version)
+                        if build_number:
+                            config.set(stanza, "BUILD", build_number)
+                        update_file = True
 
         if update_file:
-            with open("config/splunk_matrix.conf", "w") as configfile:
+            with open(config_path, "w") as configfile:
                 config.write(configfile)
             return "True"
+
     return "False"
 
 
 if __name__ == "__main__":
-    token = get_token()
-    update_file = update_splunk_version(token)
+    update_file = update_splunk_version()
     print(update_file)

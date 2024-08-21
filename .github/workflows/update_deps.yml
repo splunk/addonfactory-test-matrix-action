@@ -12,6 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
       - run: ./sc4s_sync.sh
       - uses: crazy-max/ghaction-import-gpg@v6
         with:
@@ -45,7 +47,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-      - run: ./splunk_sync.sh
+        with:
+          python-version: 3.12
+      - name: check for latest version
+        id: check-latest-splunk
+        run: |
+          pip install -r requirements.txt
+          is_splunk_config_file_updated=$(python splunk_matrix_update.py)
+          echo $is_splunk_config_file_updated
       - uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.SA_GPG_PRIVATE_KEY }}
