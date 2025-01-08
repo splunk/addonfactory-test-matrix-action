@@ -132,7 +132,10 @@ def main():
         help="Include unsupported SC4S versions",
     )
     parser.add_argument(
-        "--splunkfeatures", type=str, default="METRICS_MULTI,PYTHON3", help="Required Features"
+        "--splunkfeatures",
+        type=str,
+        default="METRICS_MULTI,PYTHON3",
+        help="Required Features",
     )
 
     args = parser.parse_args()
