@@ -1,6 +1,5 @@
-# action.yml
-name: "Add on factory test matrix"
+name: "addonfactory-test-matrix-action"
 description: "This tool automates the selection matrix dimensions"
 runs:
   using: "docker"
-  image: docker://ghcr.io/splunk/addonfactory-test-matrix-action/addonfactory-test-matrix-action:v2.1.12
+  image: "Dockerfile"

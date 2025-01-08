@@ -16,8 +16,4 @@
 #   ######################################################################## 
 set -e
 . /venv/bin/activate
-if [ -f $INPUT_APP_PATH ]
-then 
-    f="--file=.addonmatrix"
-fi
-python /addonfactory_test_matrix_action/main.py $f $@
+python /addonfactory_test_matrix_action/main.py $@
