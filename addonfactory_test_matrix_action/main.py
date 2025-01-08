@@ -9,13 +9,6 @@ from datetime import datetime
 from pathlib import Path
 
 
-class LoadFromFile(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-        with values as f:
-            # parse arguments in the file and store them in the target namespace
-            parser.parse_args(f.read().split(), namespace)
-
-
 def has_features(features, section):
     if features is not None:
         for feature in features.split(","):
@@ -128,19 +121,21 @@ def _generate_supported_vendors(args, path):
 def main():
     parser = argparse.ArgumentParser(description="Determine support matrix")
 
-    parser.add_argument("--file", type=open, action=LoadFromFile)
     parser.add_argument(
         "--unsupportedSplunk",
         action="store_true",
-        help="include unsupported Splunk versions",
+        help="Include unsupported Splunk versions",
     )
     parser.add_argument(
         "--unsupportedSC4S",
         action="store_true",
-        help="include unsupported SC4S versions",
+        help="Include unsupported SC4S versions",
     )
     parser.add_argument(
-        "--splunkfeatures", type=str, default=None, help="Required Features"
+        "--splunkfeatures",
+        type=str,
+        default="METRICS_MULTI,PYTHON3",
+        help="Required Features",
     )
 
     args = parser.parse_args()
