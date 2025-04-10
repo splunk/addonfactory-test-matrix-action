@@ -50,6 +50,7 @@ def _generate_supported_splunk(args, path):
                     "build": props["build"],
                     "islatest": (config["GENERAL"]["LATEST"] == section),
                     "isoldest": (config["GENERAL"]["OLDEST"] == section),
+                    "isEpSupporting": (config["GENERAL"]["EP_SUPPORTING"] == section),
                 }
             )
     return supported_splunk
@@ -132,9 +133,6 @@ def main():
     path = os.path.join(Path(__file__).parent.parent, "config")
 
     supported_splunk = _generate_supported_splunk(args, path)
-    pprint.pprint(f"Supported Splunk versions: {json.dumps(supported_splunk)}")
-    with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
-        print(f"supportedSplunk={json.dumps(supported_splunk)}", file=fh)
 
     for splunk in supported_splunk:
         if splunk["islatest"]:
@@ -142,6 +140,17 @@ def main():
             with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
                 print(f"latestSplunk={json.dumps([splunk])}", file=fh)
             break
+
+    splunk_supporting_ep = next((splunk for splunk in supported_splunk if splunk["isEpSupporting"]), None)
+    if splunk_supporting_ep:
+        pprint.pprint(f"EP Supporting Splunk version: {json.dumps(splunk_supporting_ep)}")
+        supported_splunk.remove(splunk_supporting_ep) # do not pass this splunk version on the supported list
+        with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+            print(f"epSupportingSplunk={json.dumps(splunk_supporting_ep)}", file=fh)
+
+    pprint.pprint(f"Supported Splunk versions: {json.dumps(supported_splunk)}")
+    with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+        print(f"supportedSplunk={json.dumps(supported_splunk)}", file=fh)
 
     supported_sc4s = _generate_supported_sc4s(args, path)
     pprint.pprint(f"Supported SC4S versions: {json.dumps(supported_sc4s)}")
