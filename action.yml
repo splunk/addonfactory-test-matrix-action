@@ -2,4 +2,4 @@ name: "addonfactory-test-matrix-action"
 description: "This tool automates the selection matrix dimensions"
 runs:
   using: "docker"
-  image: "docker://ghcr.io/splunk/addonfactory-test-matrix-action/addonfactory-test-matrix-action:v3.0.5"
+  image: Dockerfile
