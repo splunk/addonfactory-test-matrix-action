@@ -32,10 +32,10 @@ def _generate_supported_splunk(args, path):
             supported_splunk_string = config[section]["SUPPORTED"]
             eol = datetime.strptime(supported_splunk_string, "%Y-%m-%d").date()
             today = datetime.now().date()
-            if not (args.unsupportedSplunk or today <= eol):
+            if today >= eol:
                 continue
 
-            if not has_features(args.splunkfeatures, config[section]):
+            if not has_features(args.features, config[section]):
                 continue
             for k in config[section].keys():
                 try:
@@ -67,7 +67,7 @@ def _generate_supported_sc4s(args, path):
             if supported_string != "ROLLING":
                 eol = datetime.strptime(supported_string, "%Y-%m-%d").date()
                 today = datetime.now().date()
-                if not (args.unsupportedSC4S or today <= eol):
+                if today >= eol:
                     continue
 
             for k in config[section].keys():
@@ -120,22 +120,10 @@ def _generate_supported_vendors(args, path):
 
 def main():
     parser = argparse.ArgumentParser(description="Determine support matrix")
-
     parser.add_argument(
-        "--unsupportedSplunk",
-        action="store_true",
-        help="Include unsupported Splunk versions",
-    )
-    parser.add_argument(
-        "--unsupportedSC4S",
-        action="store_true",
-        help="Include unsupported SC4S versions",
-    )
-    parser.add_argument(
-        "--splunkfeatures",
+        "--features",
         type=str,
-        default="METRICS_MULTI,PYTHON3",
-        help="Required Features",
+        help="Comma separated list of features",
     )
 
     args = parser.parse_args()
