@@ -67,7 +67,7 @@ def _generate_supported_sc4s(args, path):
             if supported_string != "ROLLING":
                 eol = datetime.strptime(supported_string, "%Y-%m-%d").date()
                 today = datetime.now().date()
-                if (today >= eol):
+                if today >= eol:
                     continue
 
             for k in config[section].keys():
