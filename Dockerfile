@@ -9,4 +9,4 @@ COPY /entrypoint.sh /
 
 WORKDIR /github/workspace
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["bash", "-x", "/entrypoint.sh"]

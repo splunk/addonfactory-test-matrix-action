@@ -1,5 +1,13 @@
 name: "addonfactory-test-matrix-action"
 description: "This tool automates the selection matrix dimensions"
+inputs:
+  features:
+    description: 'Comma separated list of features.'
+    required: false
+    type: string
 runs:
   using: "docker"
-  image: "docker://ghcr.io/splunk/addonfactory-test-matrix-action/addonfactory-test-matrix-action:v3.0.6"
+  image: "Dockerfile"
+  args:
+    - --features
+    - ${{ inputs.features }}
