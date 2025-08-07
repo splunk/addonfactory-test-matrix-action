@@ -35,7 +35,7 @@ def _generate_supported_splunk(args, path):
             if today >= eol:
                 continue
 
-            if not has_features(args.splunkfeatures, config[section]):
+            if not has_features(args.features, config[section]):
                 continue
             for k in config[section].keys():
                 try:
