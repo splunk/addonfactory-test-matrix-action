@@ -123,6 +123,7 @@ def main():
     parser.add_argument(
         "--features",
         type=str,
+        default=None,
         help="Comma separated list of features",
     )
 

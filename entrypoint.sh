@@ -16,4 +16,9 @@
 #   ######################################################################## 
 set -e
 . /venv/bin/activate
-python /addonfactory_test_matrix_action/main.py $@
+
+if [ -n "$INPUT_FEATURES" ] && [ "$INPUT_FEATURES" != "" ]; then
+    python /addonfactory_test_matrix_action/main.py --features "$INPUT_FEATURES"
+else
+    python /addonfactory_test_matrix_action/main.py
+fi
