@@ -8,6 +8,3 @@ inputs:
 runs:
   using: "docker"
   image: "Dockerfile"
-  args:
-    - --features
-    - ${{ inputs.features }}
