@@ -7,4 +7,4 @@ inputs:
     type: string
 runs:
   using: "docker"
-  image: "docker://ghcr.io/splunk/addonfactory-test-matrix-action/addonfactory-test-matrix-action:v3.1.1"
+  image: "docker://ghcr.io/splunk/addonfactory-test-matrix-action/addonfactory-test-matrix-action:v3.1.2"
