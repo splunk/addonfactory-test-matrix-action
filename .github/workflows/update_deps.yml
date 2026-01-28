@@ -10,10 +10,10 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
-          python-version: 3.12
+          python-version: 3.14
       - run: ./sc4s_sync.sh
       - uses: crazy-max/ghaction-import-gpg@v6
         with:
@@ -45,10 +45,10 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
-          python-version: 3.12
+          python-version: 3.14
       - name: check for latest version
         id: check-latest-splunk
         run: |
