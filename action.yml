@@ -5,6 +5,17 @@ inputs:
     description: 'Comma separated list of features.'
     required: false
     type: string
+outputs:
+  supportedSplunk:
+    description: 'JSON array of all supported Splunk versions'
+  latestSplunk:
+    description: 'JSON array with the single latest Splunk version'
+  supportedSC4S:
+    description: 'JSON array of all supported SC4S versions'
+  supportedModinputFunctionalVendors:
+    description: 'JSON array of supported modinput functional vendor versions'
+  supportedUIVendors:
+    description: 'JSON array of supported UI vendor versions'
 runs:
   using: "docker"
-  image: 'docker://ghcr.io/splunk/addonfactory-test-matrix-action/addonfactory-test-matrix-action:v3.1.7'
+  image: 'Dockerfile'

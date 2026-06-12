@@ -44,14 +44,20 @@ def _generate_supported_splunk(args, path):
                     value = config[section][k]
                 props[k] = value
 
-            supported_splunk.append(
-                {
-                    "version": props["version"],
-                    "build": props["build"],
-                    "islatest": (config["GENERAL"]["LATEST"] == section),
-                    "isoldest": (config["GENERAL"]["OLDEST"] == section),
-                }
-            )
+            base_entry = {
+                "version": props["version"],
+                "build": props["build"],
+                "islatest": (config["GENERAL"]["LATEST"] == section),
+                "isoldest": (config["GENERAL"]["OLDEST"] == section),
+            }
+            server_conf_python_versions = props.get("server_conf_python_versions")
+            if server_conf_python_versions:
+                for python_version in server_conf_python_versions.split(","):
+                    variant = dict(base_entry)
+                    variant["serverConfPythonVersion"] = python_version.strip()
+                    supported_splunk.append(variant)
+            else:
+                supported_splunk.append(base_entry)
     return supported_splunk
 
 
