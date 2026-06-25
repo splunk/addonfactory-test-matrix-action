@@ -1,4 +1,5 @@
 import configparser
+import datetime
 import sys
 import os
 from unittest.mock import patch, MagicMock
@@ -136,17 +137,28 @@ def test_add_new_version_stanza_adds_stanza_with_correct_fields():
     assert config.get("10.4", "BUILD") == "abc123def456"
 
 
-def test_add_new_version_stanza_uses_unknown_when_scrape_fails():
+def test_add_new_version_stanza_skips_when_scrape_fails():
+    # UNKNOWN is rejected because main.py does an unconditional strptime on SUPPORTED.
     config = make_config("[GENERAL]\nLATEST = 10.2\nOLDEST = 9.3\n")
     with patch("splunk_matrix_update.get_supported_date", return_value="UNKNOWN"):
         result = add_new_version_stanza(config, "10.4", SAMPLE_IMAGES)
-    assert result is True
-    assert config.get("10.4", "SUPPORTED") == "UNKNOWN"
+    assert result is False
+    assert not config.has_section("10.4")
 
 
 def test_add_new_version_stanza_skips_already_expired():
     config = make_config("[GENERAL]\nLATEST = 10.2\nOLDEST = 9.3\n")
     with patch("splunk_matrix_update.get_supported_date", return_value="2020-01-01"):
+        result = add_new_version_stanza(config, "10.4", SAMPLE_IMAGES)
+    assert result is False
+    assert not config.has_section("10.4")
+
+
+def test_add_new_version_stanza_skips_on_exact_eol_day():
+    # On the exact EOL day main.py skips the stanza (today >= eol), so we must not add it.
+    today_str = datetime.date.today().isoformat()
+    config = make_config("[GENERAL]\nLATEST = 10.2\nOLDEST = 9.3\n")
+    with patch("splunk_matrix_update.get_supported_date", return_value=today_str):
         result = add_new_version_stanza(config, "10.4", SAMPLE_IMAGES)
     assert result is False
     assert not config.has_section("10.4")
@@ -184,6 +196,15 @@ def test_remove_expired_versions_returns_false_when_nothing_removed():
     result = remove_expired_versions(config)
     assert result is False
     assert config.has_section("10.2")
+
+
+def test_remove_expired_versions_removes_on_exact_eol_day():
+    # Aligns with main.py's `today >= eol` — prune on the EOL date itself.
+    today_str = datetime.date.today().isoformat()
+    config = make_config(f"[10.2]\nVERSION = 10.2.2\nSUPPORTED = {today_str}\n")
+    result = remove_expired_versions(config)
+    assert result is True
+    assert not config.has_section("10.2")
 
 
 def test_update_general_section_updates_latest_and_oldest():

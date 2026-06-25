@@ -168,17 +168,22 @@ def add_new_version_stanza(
     Adds a new [major.minor] stanza to config for a previously unseen Splunk version.
 
     Returns True if the stanza was added, False if skipped (version not found on
-    Docker Hub, or its end-of-support date is already in the past).
+    Docker Hub, its end-of-support date could not be determined, or the date is
+    already today or in the past).
     """
     supported = get_supported_date(major_minor)
 
-    if supported != "UNKNOWN":
-        try:
-            eol_date = datetime.date.fromisoformat(supported)
-            if eol_date < datetime.date.today():
-                return False
-        except ValueError:
-            pass
+    if supported == "UNKNOWN":
+        # main.py does an unconditional strptime on SUPPORTED; writing UNKNOWN
+        # would crash the action when it processes the matrix.
+        return False
+
+    try:
+        eol_date = datetime.date.fromisoformat(supported)
+        if eol_date <= datetime.date.today():
+            return False
+    except ValueError:
+        return False
 
     latest_version = get_latest_image(major_minor, images)
     if not latest_version:
@@ -199,7 +204,8 @@ def add_new_version_stanza(
 
 def remove_expired_versions(config: configparser.ConfigParser) -> bool:
     """
-    Removes stanzas whose SUPPORTED date is in the past.
+    Removes stanzas whose SUPPORTED date is today or in the past.
+    Matches the consumer (main.py) which skips stanzas when today >= eol.
     Stanzas with SUPPORTED = UNKNOWN are never removed.
     Returns True if at least one stanza was removed.
     """
@@ -212,7 +218,7 @@ def remove_expired_versions(config: configparser.ConfigParser) -> bool:
         if supported_str == "UNKNOWN":
             continue
         try:
-            if datetime.date.fromisoformat(supported_str) < today:
+            if datetime.date.fromisoformat(supported_str) <= today:
                 to_remove.append(section)
         except ValueError:
             continue
