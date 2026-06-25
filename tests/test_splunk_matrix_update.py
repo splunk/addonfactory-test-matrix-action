@@ -90,6 +90,20 @@ def test_get_supported_date_returns_unknown_on_http_error():
         assert get_supported_date("10.4") == "UNKNOWN"
 
 
+def test_get_supported_date_does_not_match_adjacent_version():
+    # "10.4" must not steal the date from "10.40"
+    html = "...Splunk 10.40.x ... January 15, 2029 ... Splunk 10.4.x ... March 1, 2028 ..."
+    with patch("splunk_matrix_update.requests.get", return_value=_mock_response(html)):
+        assert get_supported_date("10.4") == "2028-03-01"
+
+
+def test_get_supported_date_returns_unknown_when_no_date_in_range():
+    # Version present but date is more than 300 chars away
+    html = "10.4" + "x" * 400 + "January 15, 2028"
+    with patch("splunk_matrix_update.requests.get", return_value=_mock_response(html)):
+        assert get_supported_date("10.4") == "UNKNOWN"
+
+
 SAMPLE_IMAGES = [
     {"name": "10.4.1", "images": [{"digest": "sha256-abc"}]},
     {"name": "10.4.0", "images": [{"digest": "sha256-xyz"}]},

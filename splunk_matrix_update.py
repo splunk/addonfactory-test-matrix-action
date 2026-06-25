@@ -151,7 +151,7 @@ def get_supported_date(major_minor: str) -> str:
         response.raise_for_status()
         escaped = re.escape(major_minor)
         # Find the version string followed within 300 characters by a month-day-year date
-        pattern = rf"{escaped}[^<]{{0,300}}?({date_re})"
+        pattern = rf"{escaped}(?!\d)[^<]{{0,300}}?({date_re})"
         match = re.search(pattern, response.text, re.IGNORECASE | re.DOTALL)
         if match:
             return datetime.datetime.strptime(
