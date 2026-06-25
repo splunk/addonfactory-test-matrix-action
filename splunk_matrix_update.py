@@ -191,11 +191,14 @@ def add_new_version_stanza(
 
     image_digest = get_image_digest(latest_version, images)
     build = get_build_number(image_digest, images) if image_digest else None
+    if not build:
+        # main.py accesses props["build"] unconditionally; a missing BUILD key
+        # would cause a KeyError at action runtime.
+        return False
 
     config.add_section(major_minor)
     config.set(major_minor, "VERSION", latest_version)
-    if build:
-        config.set(major_minor, "BUILD", build)
+    config.set(major_minor, "BUILD", build)
     config.set(major_minor, "SUPPORTED", supported)
     config.set(major_minor, "PYTHON39", "true")
     config.set(major_minor, "PYTHON37", "false")

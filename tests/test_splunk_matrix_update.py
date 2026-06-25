@@ -172,6 +172,19 @@ def test_add_new_version_stanza_skips_when_no_docker_image():
     assert not config.has_section("99.9")
 
 
+def test_add_new_version_stanza_skips_when_no_build_hash():
+    # Image tag exists but no matching 12-char build hash — main.py would KeyError on BUILD.
+    images_no_build = [
+        {"name": "10.4.1", "images": [{"digest": "sha256-abc"}]},
+        # no build-hash entry with digest sha256-abc
+    ]
+    config = make_config("[GENERAL]\nLATEST = 10.2\nOLDEST = 9.3\n")
+    with patch("splunk_matrix_update.get_supported_date", return_value="2028-06-15"):
+        result = add_new_version_stanza(config, "10.4", images_no_build)
+    assert result is False
+    assert not config.has_section("10.4")
+
+
 def test_remove_expired_versions_removes_past_eol():
     config = make_config(
         "[GENERAL]\nLATEST = 10.2\nOLDEST = 9.3\n"
@@ -234,10 +247,12 @@ def test_update_splunk_version_adds_new_minor_and_updates_general(
     tmp_path, monkeypatch
 ):
     # Arrange: config with only 9.3, Docker Hub has 9.3.x and 10.4.x
+    # Use a far-future SUPPORTED date so the pruner never removes 9.3 as time advances.
+    future_date = (datetime.date.today() + datetime.timedelta(days=3650)).isoformat()
     conf_path = tmp_path / "splunk_matrix.conf"
     conf_path.write_text(
         "[GENERAL]\nLATEST = 9.3\nOLDEST = 9.3\n"
-        "[9.3]\nVERSION = 9.3.10\nBUILD = aabbccddee00\nSUPPORTED = 2026-07-24\n"
+        f"[9.3]\nVERSION = 9.3.10\nBUILD = aabbccddee00\nSUPPORTED = {future_date}\n"
         "PYTHON39 = true\nPYTHON37 = false\n"
     )
     monkeypatch.chdir(tmp_path)
@@ -250,6 +265,7 @@ def test_update_splunk_version_adds_new_minor_and_updates_general(
         {"name": "9.3.10", "images": [{"digest": "sha256-9310"}]},
         {"name": "10.4.0", "images": [{"digest": "sha256-1040"}]},
         {"name": "aabbccddee11", "images": [{"digest": "sha256-9311"}]},
+        {"name": "bb1040bb1040", "images": [{"digest": "sha256-1040"}]},
     ]
 
     with patch(
@@ -265,6 +281,7 @@ def test_update_splunk_version_adds_new_minor_and_updates_general(
     # New stanza added
     assert config.has_section("10.4")
     assert config.get("10.4", "VERSION") == "10.4.0"
+    assert config.get("10.4", "BUILD") == "bb1040bb1040"
     assert config.get("10.4", "SUPPORTED") == "2028-06-15"
     # GENERAL updated
     assert config.get("GENERAL", "LATEST") == "10.4"
