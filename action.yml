@@ -7,7 +7,9 @@ inputs:
     type: string
 outputs:
   supportedSplunk:
-    description: 'JSON array of all supported Splunk versions'
+    description: 'JSON array of all supported Splunk versions (with server_conf_python_versions variants expanded)'
+  supportedSplunkBase:
+    description: 'JSON array of supported Splunk versions without server_conf_python_versions expansion'
   latestSplunk:
     description: 'JSON array with the single latest Splunk version'
   supportedSC4S:

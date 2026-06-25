@@ -61,6 +61,42 @@ def _generate_supported_splunk(args, path):
     return supported_splunk
 
 
+def _generate_supported_splunk_base(args, path):
+    """Like _generate_supported_splunk but never expands server_conf_python_versions variants."""
+    if os.path.exists("splunk_matrix.conf"):
+        splunk_matrix = "splunk_matrix.conf"
+    else:
+        splunk_matrix = os.path.join(path, "splunk_matrix.conf")
+    config = configparser.ConfigParser()
+    config.read(splunk_matrix)
+    supported_splunk = []
+    for section in config.sections():
+        if re.search(r"^\d+", section):
+            props = {}
+            supported_splunk_string = config[section]["SUPPORTED"]
+            eol = datetime.strptime(supported_splunk_string, "%Y-%m-%d").date()
+            today = datetime.now().date()
+            if today >= eol:
+                continue
+            if not has_features(args.features, config[section]):
+                continue
+            for k in config[section].keys():
+                try:
+                    value = config[section].getboolean(k)
+                except:
+                    value = config[section][k]
+                props[k] = value
+            supported_splunk.append(
+                {
+                    "version": props["version"],
+                    "build": props["build"],
+                    "islatest": (config["GENERAL"]["LATEST"] == section),
+                    "isoldest": (config["GENERAL"]["OLDEST"] == section),
+                }
+            )
+    return supported_splunk
+
+
 def _generate_supported_sc4s(args, path):
     config = configparser.ConfigParser()
     sc4s_matrix = os.path.join(path, "SC4S_matrix.conf")
@@ -141,6 +177,11 @@ def main():
     pprint.pprint(f"Supported Splunk versions: {json.dumps(supported_splunk)}")
     with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
         print(f"supportedSplunk={json.dumps(supported_splunk)}", file=fh)
+
+    supported_splunk_base = _generate_supported_splunk_base(args, path)
+    pprint.pprint(f"Supported Splunk versions (base): {json.dumps(supported_splunk_base)}")
+    with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+        print(f"supportedSplunkBase={json.dumps(supported_splunk_base)}", file=fh)
 
     for splunk in supported_splunk:
         if splunk["islatest"]:
