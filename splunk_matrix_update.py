@@ -1,4 +1,5 @@
 import configparser
+import datetime
 import json
 import os
 import re
@@ -101,6 +102,29 @@ def get_image_digest(image: str, image_list: List[Dict]) -> Optional[str]:
         ),
         None,
     )
+
+
+def get_all_major_minor_versions(images: List[Dict]) -> List[str]:
+    """
+    Returns unique major.minor version prefixes found in Docker Hub image tags.
+    Only considers tags matching X.Y.Z (excludes build hashes, 'latest', pre-release).
+    """
+    seen = set()
+    for image in images:
+        if re.match(r'^\d+\.\d+\.\d+$', image["name"]):
+            parts = image["name"].split(".")
+            seen.add(f"{parts[0]}.{parts[1]}")
+    return list(seen)
+
+
+def get_new_versions(
+    config: configparser.ConfigParser, images: List[Dict]
+) -> List[str]:
+    """
+    Returns major.minor versions present on Docker Hub that have no stanza in config.
+    """
+    existing = set(config.sections()) - {"GENERAL"}
+    return [v for v in get_all_major_minor_versions(images) if v not in existing]
 
 
 def update_splunk_version() -> str:
