@@ -93,7 +93,9 @@ def test_get_supported_date_returns_unknown_when_version_not_found():
 
 
 def test_get_supported_date_returns_unknown_on_http_error():
-    with patch("splunk_matrix_update.requests.get", return_value=_mock_response("", 500)):
+    with patch(
+        "splunk_matrix_update.requests.get", return_value=_mock_response("", 500)
+    ):
         assert get_supported_date("10.4") == "UNKNOWN"
 
 
@@ -171,18 +173,14 @@ def test_remove_expired_versions_removes_past_eol():
 
 
 def test_remove_expired_versions_keeps_unknown():
-    config = make_config(
-        "[10.2]\nVERSION = 10.2.2\nSUPPORTED = UNKNOWN\n"
-    )
+    config = make_config("[10.2]\nVERSION = 10.2.2\nSUPPORTED = UNKNOWN\n")
     result = remove_expired_versions(config)
     assert result is False
     assert config.has_section("10.2")
 
 
 def test_remove_expired_versions_returns_false_when_nothing_removed():
-    config = make_config(
-        "[10.2]\nVERSION = 10.2.2\nSUPPORTED = 2028-01-15\n"
-    )
+    config = make_config("[10.2]\nVERSION = 10.2.2\nSUPPORTED = 2028-01-15\n")
     result = remove_expired_versions(config)
     assert result is False
     assert config.has_section("10.2")
@@ -211,7 +209,9 @@ def test_update_general_section_returns_false_when_unchanged():
     assert result is False
 
 
-def test_update_splunk_version_adds_new_minor_and_updates_general(tmp_path, monkeypatch):
+def test_update_splunk_version_adds_new_minor_and_updates_general(
+    tmp_path, monkeypatch
+):
     # Arrange: config with only 9.3, Docker Hub has 9.3.x and 10.4.x
     conf_path = tmp_path / "splunk_matrix.conf"
     conf_path.write_text(
@@ -231,8 +231,9 @@ def test_update_splunk_version_adds_new_minor_and_updates_general(tmp_path, monk
         {"name": "aabbccddee11", "images": [{"digest": "sha256-9311"}]},
     ]
 
-    with patch("splunk_matrix_update.get_images_details", return_value=docker_images), \
-         patch("splunk_matrix_update.get_supported_date", return_value="2028-06-15"):
+    with patch(
+        "splunk_matrix_update.get_images_details", return_value=docker_images
+    ), patch("splunk_matrix_update.get_supported_date", return_value="2028-06-15"):
         result = update_splunk_version()
 
     assert result == "True"

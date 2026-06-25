@@ -111,7 +111,7 @@ def get_all_major_minor_versions(images: List[Dict]) -> List[str]:
     """
     seen = set()
     for image in images:
-        if re.match(r'^\d+\.\d+\.\d+$', image["name"]):
+        if re.match(r"^\d+\.\d+\.\d+$", image["name"]):
             parts = image["name"].split(".")
             seen.add(f"{parts[0]}.{parts[1]}")
     return list(seen)
@@ -147,7 +147,7 @@ def get_supported_date(major_minor: str) -> str:
         escaped = re.escape(major_minor)
         # Match the version cell, skip the release-date cell, capture the EOL-date cell.
         # (?!\d) prevents "10.4" matching "10.40".
-        pattern = rf'<td>{escaped}(?!\d)</td>\s*<td>[^<]*</td>\s*<td>([^<]+)</td>'
+        pattern = rf"<td>{escaped}(?!\d)</td>\s*<td>[^<]*</td>\s*<td>([^<]+)</td>"
         match = re.search(pattern, response.text, re.IGNORECASE)
         if not match:
             return "UNKNOWN"
