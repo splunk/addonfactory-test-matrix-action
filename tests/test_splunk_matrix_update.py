@@ -10,6 +10,8 @@ from splunk_matrix_update import (
     get_new_versions,
     get_supported_date,
     add_new_version_stanza,
+    remove_expired_versions,
+    update_general_section,
 )
 
 
@@ -129,3 +131,56 @@ def test_add_new_version_stanza_skips_when_no_docker_image():
         result = add_new_version_stanza(config, "99.9", SAMPLE_IMAGES)
     assert result is False
     assert not config.has_section("99.9")
+
+
+def test_remove_expired_versions_removes_past_eol():
+    config = make_config(
+        "[GENERAL]\nLATEST = 10.2\nOLDEST = 9.3\n"
+        "[10.2]\nVERSION = 10.2.2\nSUPPORTED = 2028-01-15\n"
+        "[9.3]\nVERSION = 9.3.11\nSUPPORTED = 2020-01-01\n"
+    )
+    result = remove_expired_versions(config)
+    assert result is True
+    assert not config.has_section("9.3")
+    assert config.has_section("10.2")
+
+
+def test_remove_expired_versions_keeps_unknown():
+    config = make_config(
+        "[10.2]\nVERSION = 10.2.2\nSUPPORTED = UNKNOWN\n"
+    )
+    result = remove_expired_versions(config)
+    assert result is False
+    assert config.has_section("10.2")
+
+
+def test_remove_expired_versions_returns_false_when_nothing_removed():
+    config = make_config(
+        "[10.2]\nVERSION = 10.2.2\nSUPPORTED = 2028-01-15\n"
+    )
+    result = remove_expired_versions(config)
+    assert result is False
+    assert config.has_section("10.2")
+
+
+def test_update_general_section_updates_latest_and_oldest():
+    config = make_config(
+        "[GENERAL]\nLATEST = 9.3\nOLDEST = 9.3\n"
+        "[10.2]\nVERSION = 10.2.2\n"
+        "[9.4]\nVERSION = 9.4.10\n"
+        "[9.3]\nVERSION = 9.3.11\n"
+    )
+    result = update_general_section(config)
+    assert result is True
+    assert config.get("GENERAL", "LATEST") == "10.2"
+    assert config.get("GENERAL", "OLDEST") == "9.3"
+
+
+def test_update_general_section_returns_false_when_unchanged():
+    config = make_config(
+        "[GENERAL]\nLATEST = 10.2\nOLDEST = 9.3\n"
+        "[10.2]\nVERSION = 10.2.2\n"
+        "[9.3]\nVERSION = 9.3.11\n"
+    )
+    result = update_general_section(config)
+    assert result is False

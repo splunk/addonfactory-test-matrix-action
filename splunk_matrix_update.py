@@ -200,6 +200,54 @@ def add_new_version_stanza(
     return True
 
 
+def remove_expired_versions(config: configparser.ConfigParser) -> bool:
+    """
+    Removes stanzas whose SUPPORTED date is in the past.
+    Stanzas with SUPPORTED = UNKNOWN are never removed.
+    Returns True if at least one stanza was removed.
+    """
+    today = datetime.date.today()
+    to_remove = []
+    for section in config.sections():
+        if section == "GENERAL":
+            continue
+        supported_str = config.get(section, "SUPPORTED", fallback="UNKNOWN")
+        if supported_str == "UNKNOWN":
+            continue
+        try:
+            if datetime.date.fromisoformat(supported_str) < today:
+                to_remove.append(section)
+        except ValueError:
+            continue
+    for section in to_remove:
+        config.remove_section(section)
+    return len(to_remove) > 0
+
+
+def update_general_section(config: configparser.ConfigParser) -> bool:
+    """
+    Syncs GENERAL.LATEST and GENERAL.OLDEST to the max and min of all
+    non-GENERAL stanza names (using semver ordering).
+    Returns True if either value changed.
+    """
+    non_general = [s for s in config.sections() if s != "GENERAL"]
+    if not non_general:
+        return False
+    sorted_versions = sorted(non_general, key=lambda v: version.parse(v))
+    new_oldest = sorted_versions[0]
+    new_latest = sorted_versions[-1]
+    current_oldest = config.get("GENERAL", "OLDEST", fallback=None)
+    current_latest = config.get("GENERAL", "LATEST", fallback=None)
+    changed = False
+    if new_oldest != current_oldest:
+        config.set("GENERAL", "OLDEST", new_oldest)
+        changed = True
+    if new_latest != current_latest:
+        config.set("GENERAL", "LATEST", new_latest)
+        changed = True
+    return changed
+
+
 def update_splunk_version() -> str:
     """
     Updates the Splunk version in the config file if a newer version is available.
