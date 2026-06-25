@@ -104,6 +104,7 @@ def test_add_new_version_stanza_adds_stanza_with_correct_fields():
     assert config.get("10.4", "SUPPORTED") == "2028-06-15"
     assert config.get("10.4", "PYTHON39") == "true"
     assert config.get("10.4", "PYTHON37") == "false"
+    assert config.get("10.4", "BUILD") == "abc123def456"
 
 
 def test_add_new_version_stanza_uses_unknown_when_scrape_fails():
