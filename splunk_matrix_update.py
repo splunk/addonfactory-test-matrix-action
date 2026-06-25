@@ -133,31 +133,28 @@ def get_supported_date(major_minor: str) -> str:
     of the given major.minor version (e.g. "10.4").
 
     Returns a "YYYY-MM-DD" string on success, or "UNKNOWN" on any failure
-    (network error, HTTP error, version not yet listed, parse failure).
+    (network error, HTTP error, version not yet listed, "Not Released", parse failure).
 
-    NOTE: The regex pattern targets the page at:
-    https://www.splunk.com/en_us/legal/splunk-software-support-policy.html
-    Verify the regex against the live page if this function consistently
-    returns "UNKNOWN" for known versions.
+    Page table structure (one row per version):
+      <td>X.Y</td><td>RELEASE_DATE</td><td>EOL_DATE</td><td>...</td>
+    Dates are formatted as "Mon DD YYYY" (e.g. "May 18 2028").
+    EOL_DATE may be "Not Released" for versions not yet GA → returns "UNKNOWN".
     """
     url = "https://www.splunk.com/en_us/legal/splunk-software-support-policy.html"
-    month_names = (
-        "January|February|March|April|May|June|"
-        "July|August|September|October|November|December"
-    )
-    date_re = rf"(?:{month_names})\s+\d{{1,2}},\s*\d{{4}}"
     try:
         response = requests.get(url, timeout=15)
         response.raise_for_status()
         escaped = re.escape(major_minor)
-        # Find the version string followed within 300 characters by a month-day-year date
-        pattern = rf"{escaped}(?!\d)[^<]{{0,300}}?({date_re})"
-        match = re.search(pattern, response.text, re.IGNORECASE | re.DOTALL)
-        if match:
-            return datetime.datetime.strptime(
-                match.group(1).strip(), "%B %d, %Y"
-            ).strftime("%Y-%m-%d")
-        return "UNKNOWN"
+        # Match the version cell, skip the release-date cell, capture the EOL-date cell.
+        # (?!\d) prevents "10.4" matching "10.40".
+        pattern = rf'<td>{escaped}(?!\d)</td>\s*<td>[^<]*</td>\s*<td>([^<]+)</td>'
+        match = re.search(pattern, response.text, re.IGNORECASE)
+        if not match:
+            return "UNKNOWN"
+        date_str = match.group(1).strip()
+        if date_str == "Not Released":
+            return "UNKNOWN"
+        return datetime.datetime.strptime(date_str, "%b %d %Y").strftime("%Y-%m-%d")
     except Exception:
         return "UNKNOWN"
 

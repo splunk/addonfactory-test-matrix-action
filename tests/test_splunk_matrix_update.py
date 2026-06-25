@@ -68,10 +68,17 @@ def _mock_response(text: str, status_code: int = 200) -> MagicMock:
     return mock
 
 
-def test_get_supported_date_parses_month_day_year():
-    html = "...Splunk Enterprise 10.4.x ... January 15, 2028 ..."
+def test_get_supported_date_parses_table_structure():
+    # Real page format: <td>X.Y</td><td>RELEASE</td><td>EOL</td>
+    html = "<td>10.4</td><td>May 18 2026</td><td>May 18 2028</td>"
     with patch("splunk_matrix_update.requests.get", return_value=_mock_response(html)):
-        assert get_supported_date("10.4") == "2028-01-15"
+        assert get_supported_date("10.4") == "2028-05-18"
+
+
+def test_get_supported_date_returns_unknown_for_not_released():
+    html = "<td>10.3</td><td>Mar 24 2026</td><td>Not Released</td>"
+    with patch("splunk_matrix_update.requests.get", return_value=_mock_response(html)):
+        assert get_supported_date("10.3") == "UNKNOWN"
 
 
 def test_get_supported_date_returns_unknown_on_network_error():
@@ -91,15 +98,18 @@ def test_get_supported_date_returns_unknown_on_http_error():
 
 
 def test_get_supported_date_does_not_match_adjacent_version():
-    # "10.4" must not steal the date from "10.40"
-    html = "...Splunk 10.40.x ... January 15, 2029 ... Splunk 10.4.x ... March 1, 2028 ..."
+    # "10.4" must not steal the date from "10.40" — (?!\d) boundary prevents this
+    html = (
+        "<td>10.40</td><td>Jan 1 2025</td><td>Jan 1 2029</td>"
+        "<td>10.4</td><td>May 18 2026</td><td>May 18 2028</td>"
+    )
     with patch("splunk_matrix_update.requests.get", return_value=_mock_response(html)):
-        assert get_supported_date("10.4") == "2028-03-01"
+        assert get_supported_date("10.4") == "2028-05-18"
 
 
-def test_get_supported_date_returns_unknown_when_no_date_in_range():
-    # Version present but date is more than 300 chars away
-    html = "10.4" + "x" * 400 + "January 15, 2028"
+def test_get_supported_date_returns_unknown_when_version_absent_from_table():
+    # Version not present in the table at all
+    html = "<td>10.5</td><td>Jun 1 2027</td><td>Jun 1 2029</td>"
     with patch("splunk_matrix_update.requests.get", return_value=_mock_response(html)):
         assert get_supported_date("10.4") == "UNKNOWN"
 
