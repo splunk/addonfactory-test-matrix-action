@@ -215,6 +215,7 @@ def test_update_splunk_version_adds_new_minor_and_updates_general(tmp_path, monk
     config = make_config((tmp_path / "config" / "splunk_matrix.conf").read_text())
     # Patch version bumped
     assert config.get("9.3", "VERSION") == "9.3.11"
+    assert config.get("9.3", "BUILD") == "aabbccddee11"
     # New stanza added
     assert config.has_section("10.4")
     assert config.get("10.4", "VERSION") == "10.4.0"
