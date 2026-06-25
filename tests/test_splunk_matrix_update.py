@@ -1,10 +1,11 @@
 import configparser
 import sys
 import os
+from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from splunk_matrix_update import get_all_major_minor_versions, get_new_versions
+from splunk_matrix_update import get_all_major_minor_versions, get_new_versions, get_supported_date
 
 
 def make_config(content: str) -> configparser.ConfigParser:
@@ -47,3 +48,35 @@ def test_get_new_versions_returns_empty_when_all_present():
     config = make_config("[10.2]\nVERSION = 10.2.2\n")
     images = [{"name": "10.2.0"}, {"name": "10.2.2"}]
     assert get_new_versions(config, images) == []
+
+
+def _mock_response(text: str, status_code: int = 200) -> MagicMock:
+    mock = MagicMock()
+    mock.status_code = status_code
+    mock.text = text
+    mock.raise_for_status = MagicMock()
+    if status_code >= 400:
+        mock.raise_for_status.side_effect = Exception("HTTP error")
+    return mock
+
+
+def test_get_supported_date_parses_month_day_year():
+    html = "...Splunk Enterprise 10.4.x ... January 15, 2028 ..."
+    with patch("splunk_matrix_update.requests.get", return_value=_mock_response(html)):
+        assert get_supported_date("10.4") == "2028-01-15"
+
+
+def test_get_supported_date_returns_unknown_on_network_error():
+    with patch("splunk_matrix_update.requests.get", side_effect=Exception("timeout")):
+        assert get_supported_date("10.4") == "UNKNOWN"
+
+
+def test_get_supported_date_returns_unknown_when_version_not_found():
+    html = "<html>No relevant content here</html>"
+    with patch("splunk_matrix_update.requests.get", return_value=_mock_response(html)):
+        assert get_supported_date("10.4") == "UNKNOWN"
+
+
+def test_get_supported_date_returns_unknown_on_http_error():
+    with patch("splunk_matrix_update.requests.get", return_value=_mock_response("", 500)):
+        assert get_supported_date("10.4") == "UNKNOWN"

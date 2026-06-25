@@ -127,6 +127,41 @@ def get_new_versions(
     return [v for v in get_all_major_minor_versions(images) if v not in existing]
 
 
+def get_supported_date(major_minor: str) -> str:
+    """
+    Scrapes Splunk's software support policy page for the end-of-support date
+    of the given major.minor version (e.g. "10.4").
+
+    Returns a "YYYY-MM-DD" string on success, or "UNKNOWN" on any failure
+    (network error, HTTP error, version not yet listed, parse failure).
+
+    NOTE: The regex pattern targets the page at:
+    https://www.splunk.com/en_us/legal/splunk-software-support-policy.html
+    Verify the regex against the live page if this function consistently
+    returns "UNKNOWN" for known versions.
+    """
+    url = "https://www.splunk.com/en_us/legal/splunk-software-support-policy.html"
+    month_names = (
+        "January|February|March|April|May|June|"
+        "July|August|September|October|November|December"
+    )
+    date_re = rf"(?:{month_names})\s+\d{{1,2}},\s*\d{{4}}"
+    try:
+        response = requests.get(url, timeout=15)
+        response.raise_for_status()
+        escaped = re.escape(major_minor)
+        # Find the version string followed within 300 characters by a month-day-year date
+        pattern = rf"{escaped}[^<]{{0,300}}?({date_re})"
+        match = re.search(pattern, response.text, re.IGNORECASE | re.DOTALL)
+        if match:
+            return datetime.datetime.strptime(
+                match.group(1).strip(), "%B %d, %Y"
+            ).strftime("%Y-%m-%d")
+        return "UNKNOWN"
+    except Exception:
+        return "UNKNOWN"
+
+
 def update_splunk_version() -> str:
     """
     Updates the Splunk version in the config file if a newer version is available.
