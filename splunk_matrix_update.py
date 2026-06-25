@@ -250,44 +250,61 @@ def update_general_section(config: configparser.ConfigParser) -> bool:
 
 def update_splunk_version() -> str:
     """
-    Updates the Splunk version in the config file if a newer version is available.
+    Updates config/splunk_matrix.conf:
+    - Discovers and adds new Splunk major.minor versions from Docker Hub.
+    - Updates patch versions for all existing stanzas.
+    - Removes stanzas whose end-of-support date has passed.
+    - Syncs GENERAL.LATEST and GENERAL.OLDEST.
 
-    Returns:
-        str: "True" if the config file was updated, "False" otherwise.
+    Returns "True" if the config was changed, "False" otherwise.
     """
     config_path = "config/splunk_matrix.conf"
 
-    if os.path.isfile(config_path):
-        config = configparser.ConfigParser()
-        config.optionxform = str
-        config.read(config_path)
-        update_file = False
-        all_images_list = get_images_details()
+    if not os.path.isfile(config_path):
+        return "False"
 
-        for stanza in config.sections():
-            if stanza != "GENERAL":
-                latest_image_version = get_latest_image(stanza, all_images_list)
+    config = configparser.ConfigParser()
+    config.optionxform = str
+    config.read(config_path)
+    update_file = False
+    all_images_list = get_images_details()
 
-                if latest_image_version:
-                    stanza_image_version = config.get(stanza, "VERSION")
+    # Discover and add new major.minor versions
+    new_versions = get_new_versions(config, all_images_list)
+    for major_minor in new_versions:
+        if add_new_version_stanza(config, major_minor, all_images_list):
+            update_file = True
 
-                    if is_latest_image(latest_image_version, stanza_image_version):
-                        latest_image_digest = get_image_digest(
-                            latest_image_version, all_images_list
-                        )
-                        build_number = get_build_number(
-                            latest_image_digest, all_images_list
-                        )
+    # Update patch versions for all stanzas (including newly added ones)
+    for stanza in config.sections():
+        if stanza != "GENERAL":
+            latest_image_version = get_latest_image(stanza, all_images_list)
+            if latest_image_version:
+                stanza_image_version = config.get(stanza, "VERSION")
+                if is_latest_image(latest_image_version, stanza_image_version):
+                    latest_image_digest = get_image_digest(
+                        latest_image_version, all_images_list
+                    )
+                    build_number = get_build_number(
+                        latest_image_digest, all_images_list
+                    )
+                    config.set(stanza, "VERSION", latest_image_version)
+                    if build_number:
+                        config.set(stanza, "BUILD", build_number)
+                    update_file = True
 
-                        config.set(stanza, "VERSION", latest_image_version)
-                        if build_number:
-                            config.set(stanza, "BUILD", build_number)
-                        update_file = True
+    # Remove stanzas whose support window has closed
+    if remove_expired_versions(config):
+        update_file = True
 
-        if update_file:
-            with open(config_path, "w") as configfile:
-                config.write(configfile)
-            return "True"
+    # Keep GENERAL.LATEST and GENERAL.OLDEST in sync
+    if update_general_section(config):
+        update_file = True
+
+    if update_file:
+        with open(config_path, "w") as configfile:
+            config.write(configfile)
+        return "True"
 
     return "False"
 

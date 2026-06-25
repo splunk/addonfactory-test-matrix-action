@@ -12,6 +12,7 @@ from splunk_matrix_update import (
     add_new_version_stanza,
     remove_expired_versions,
     update_general_section,
+    update_splunk_version,
 )
 
 
@@ -184,3 +185,40 @@ def test_update_general_section_returns_false_when_unchanged():
     )
     result = update_general_section(config)
     assert result is False
+
+
+def test_update_splunk_version_adds_new_minor_and_updates_general(tmp_path, monkeypatch):
+    # Arrange: config with only 9.3, Docker Hub has 9.3.x and 10.4.x
+    conf_path = tmp_path / "splunk_matrix.conf"
+    conf_path.write_text(
+        "[GENERAL]\nLATEST = 9.3\nOLDEST = 9.3\n"
+        "[9.3]\nVERSION = 9.3.10\nBUILD = aabbccddee00\nSUPPORTED = 2026-07-24\n"
+        "PYTHON39 = true\nPYTHON37 = false\n"
+    )
+    monkeypatch.chdir(tmp_path)
+    # Create the config/ subdirectory structure update_splunk_version expects
+    (tmp_path / "config").mkdir()
+    conf_path.rename(tmp_path / "config" / "splunk_matrix.conf")
+
+    docker_images = [
+        {"name": "9.3.11", "images": [{"digest": "sha256-9311"}]},
+        {"name": "9.3.10", "images": [{"digest": "sha256-9310"}]},
+        {"name": "10.4.0", "images": [{"digest": "sha256-1040"}]},
+        {"name": "aabbccddee11", "images": [{"digest": "sha256-9311"}]},
+    ]
+
+    with patch("splunk_matrix_update.get_images_details", return_value=docker_images), \
+         patch("splunk_matrix_update.get_supported_date", return_value="2028-06-15"):
+        result = update_splunk_version()
+
+    assert result == "True"
+    config = make_config((tmp_path / "config" / "splunk_matrix.conf").read_text())
+    # Patch version bumped
+    assert config.get("9.3", "VERSION") == "9.3.11"
+    # New stanza added
+    assert config.has_section("10.4")
+    assert config.get("10.4", "VERSION") == "10.4.0"
+    assert config.get("10.4", "SUPPORTED") == "2028-06-15"
+    # GENERAL updated
+    assert config.get("GENERAL", "LATEST") == "10.4"
+    assert config.get("GENERAL", "OLDEST") == "9.3"
