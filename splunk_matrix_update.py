@@ -162,6 +162,44 @@ def get_supported_date(major_minor: str) -> str:
         return "UNKNOWN"
 
 
+def add_new_version_stanza(
+    config: configparser.ConfigParser,
+    major_minor: str,
+    images: List[Dict],
+) -> bool:
+    """
+    Adds a new [major.minor] stanza to config for a previously unseen Splunk version.
+
+    Returns True if the stanza was added, False if skipped (version not found on
+    Docker Hub, or its end-of-support date is already in the past).
+    """
+    supported = get_supported_date(major_minor)
+
+    if supported != "UNKNOWN":
+        try:
+            eol_date = datetime.date.fromisoformat(supported)
+            if eol_date < datetime.date.today():
+                return False
+        except ValueError:
+            pass
+
+    latest_version = get_latest_image(major_minor, images)
+    if not latest_version:
+        return False
+
+    image_digest = get_image_digest(latest_version, images)
+    build = get_build_number(image_digest, images) if image_digest else None
+
+    config.add_section(major_minor)
+    config.set(major_minor, "VERSION", latest_version)
+    if build:
+        config.set(major_minor, "BUILD", build)
+    config.set(major_minor, "SUPPORTED", supported)
+    config.set(major_minor, "PYTHON39", "true")
+    config.set(major_minor, "PYTHON37", "false")
+    return True
+
+
 def update_splunk_version() -> str:
     """
     Updates the Splunk version in the config file if a newer version is available.
