@@ -310,9 +310,7 @@ def test_update_splunk_version_exits_on_unknown_eol_for_new_version(
 
     with patch(
         "splunk_matrix_update.get_images_details", return_value=docker_images
-    ), patch(
-        "splunk_matrix_update.get_supported_date", return_value="UNKNOWN"
-    ), patch(
+    ), patch("splunk_matrix_update.get_supported_date", return_value="UNKNOWN"), patch(
         "splunk_matrix_update.sys.exit"
     ) as mock_exit:
         update_splunk_version()
