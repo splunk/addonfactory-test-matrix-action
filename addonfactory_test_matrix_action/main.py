@@ -55,6 +55,47 @@ def _generate_supported_splunk(args, path):
     return supported_splunk
 
 
+def _generate_supported_splunk_modinput(args, path):
+    if os.path.exists("splunk_matrix.conf"):
+        splunk_matrix = "splunk_matrix.conf"
+    else:
+        splunk_matrix = os.path.join(path, "splunk_matrix.conf")
+    config = configparser.ConfigParser()
+    config.read(splunk_matrix)
+    supported_splunk = []
+    for section in config.sections():
+        if re.search(r"^\d+", section):
+            props = {}
+            supported_splunk_string = config[section]["SUPPORTED"]
+            eol = datetime.strptime(supported_splunk_string, "%Y-%m-%d").date()
+            today = datetime.now().date()
+            if today >= eol:
+                continue
+            if not has_features(args.features, config[section]):
+                continue
+            for k in config[section].keys():
+                try:
+                    value = config[section].getboolean(k)
+                except:
+                    value = config[section][k]
+                props[k] = value
+            base_entry = {
+                "version": props["version"],
+                "build": props["build"],
+                "islatest": (config["GENERAL"]["LATEST"] == section),
+                "isoldest": (config["GENERAL"]["OLDEST"] == section),
+            }
+            server_conf_python_versions = props.get("server_conf_python_versions")
+            if server_conf_python_versions:
+                for python_version in server_conf_python_versions.split(","):
+                    variant = dict(base_entry)
+                    variant["serverConfPythonVersion"] = python_version.strip()
+                    supported_splunk.append(variant)
+            else:
+                supported_splunk.append(base_entry)
+    return supported_splunk
+
+
 def _generate_supported_sc4s(args, path):
     config = configparser.ConfigParser()
     sc4s_matrix = os.path.join(path, "SC4S_matrix.conf")
@@ -135,6 +176,11 @@ def main():
     pprint.pprint(f"Supported Splunk versions: {json.dumps(supported_splunk)}")
     with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
         print(f"supportedSplunk={json.dumps(supported_splunk)}", file=fh)
+
+    supported_splunk_modinput = _generate_supported_splunk_modinput(args, path)
+    pprint.pprint(f"Supported Splunk versions (modinput): {json.dumps(supported_splunk_modinput)}")
+    with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+        print(f"supportedSplunkModinput={json.dumps(supported_splunk_modinput)}", file=fh)
 
     for splunk in supported_splunk:
         if splunk["islatest"]:
