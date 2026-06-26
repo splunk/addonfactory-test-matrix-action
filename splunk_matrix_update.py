@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 import re
+import sys
 from packaging import version
 import requests
 from typing import List, Dict, Optional
@@ -278,6 +279,15 @@ def update_splunk_version() -> str:
     # Discover and add new major.minor versions
     new_versions = get_new_versions(config, all_images_list)
     for major_minor in new_versions:
+        supported = get_supported_date(major_minor)
+        if supported == "UNKNOWN":
+            print(
+                f"ERROR: {major_minor} is present on Docker Hub but its EOL date "
+                f"could not be fetched from the Splunk support policy page. "
+                f"The scraper may need updating. Inspect get_supported_date().",
+                file=sys.stderr,
+            )
+            sys.exit(1)
         if add_new_version_stanza(config, major_minor, all_images_list):
             update_file = True
 

@@ -286,3 +286,35 @@ def test_update_splunk_version_adds_new_minor_and_updates_general(
     # GENERAL updated
     assert config.get("GENERAL", "LATEST") == "10.4"
     assert config.get("GENERAL", "OLDEST") == "9.3"
+
+
+def test_update_splunk_version_exits_on_unknown_eol_for_new_version(
+    tmp_path, monkeypatch
+):
+    # When a new Docker Hub version can't get an EOL date the workflow must go red.
+    future_date = (datetime.date.today() + datetime.timedelta(days=3650)).isoformat()
+    conf_path = tmp_path / "splunk_matrix.conf"
+    conf_path.write_text(
+        "[GENERAL]\nLATEST = 9.3\nOLDEST = 9.3\n"
+        f"[9.3]\nVERSION = 9.3.10\nBUILD = aabbccddee00\nSUPPORTED = {future_date}\n"
+        "PYTHON39 = true\nPYTHON37 = false\n"
+    )
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "config").mkdir()
+    conf_path.rename(tmp_path / "config" / "splunk_matrix.conf")
+
+    docker_images = [
+        {"name": "9.3.11", "images": [{"digest": "sha256-9311"}]},
+        {"name": "10.4.0", "images": [{"digest": "sha256-1040"}]},
+    ]
+
+    with patch(
+        "splunk_matrix_update.get_images_details", return_value=docker_images
+    ), patch(
+        "splunk_matrix_update.get_supported_date", return_value="UNKNOWN"
+    ), patch(
+        "splunk_matrix_update.sys.exit"
+    ) as mock_exit:
+        update_splunk_version()
+
+    mock_exit.assert_called_once_with(1)
