@@ -17,7 +17,8 @@ from addonfactory_test_matrix_action.main import (
 # Helpers
 # ---------------------------------------------------------------------------
 
-_MATRIX_TEMPLATE = textwrap.dedent("""\
+_MATRIX_TEMPLATE = textwrap.dedent(
+    """\
     [GENERAL]
     LATEST = 10.2
     OLDEST = 9.3
@@ -40,11 +41,13 @@ _MATRIX_TEMPLATE = textwrap.dedent("""\
     BUILD = cccccccccccc
     SUPPORTED = 2026-07-24
     PYTHON39 = true
-""")
+"""
+)
 
 # 9.3 is EOL relative to today (2026-07-24 < 2026-06-30 is false, but let's use
 # a matrix where one section is genuinely EOL for that test)
-_MATRIX_WITH_EOL = textwrap.dedent("""\
+_MATRIX_WITH_EOL = textwrap.dedent(
+    """\
     [GENERAL]
     LATEST = 10.2
     OLDEST = 9.0
@@ -67,9 +70,11 @@ _MATRIX_WITH_EOL = textwrap.dedent("""\
     BUILD = dddddddddddd
     SUPPORTED = 2024-01-01
     PYTHON39 = false
-""")
+"""
+)
 
-_MATRIX_INVALID_VERSION = textwrap.dedent("""\
+_MATRIX_INVALID_VERSION = textwrap.dedent(
+    """\
     [GENERAL]
     LATEST = 9.4
     OLDEST = 9.4
@@ -79,7 +84,8 @@ _MATRIX_INVALID_VERSION = textwrap.dedent("""\
     BUILD = bbbbbbbbbbbb
     SUPPORTED = 2028-01-15
     SERVER_CONF_PYTHON_VERSIONS = invalid_value
-""")
+"""
+)
 
 
 def _args(features=None):
