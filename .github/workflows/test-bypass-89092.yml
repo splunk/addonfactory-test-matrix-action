@@ -1,0 +1,54 @@
+name: "test-bypass-89092"
+on:
+  push:
+    branches:
+      - "test/verify-bypass-89092"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create throwaway commit and PR
+        id: create
+        run: |
+          git config --global user.email ${{ secrets.GH_USER_EMAIL }}
+          git config --global user.name ${{ secrets.GH_USER_ADMIN }}
+
+          BRANCH_NAME="test/bypass-probe-$GITHUB_RUN_ID"
+          git checkout -b "$BRANCH_NAME"
+          echo "probe $GITHUB_RUN_ID" >> BYPASS_PROBE.tmp
+          git add BYPASS_PROBE.tmp
+          git commit -m "test: bypass probe (ADDON-89092 verification, safe to delete)"
+          git push --set-upstream origin "$BRANCH_NAME"
+
+          PR_URL=$(gh pr create --title "test: bypass probe (ADDON-89092, will be closed)" \
+            --body "Throwaway PR verifying whether srv-rr-github-token's bypass_pull_request_allowances lets GH_TOKEN_ADMIN merge without review. Safe to close/delete if left open." \
+            --head "$BRANCH_NAME" --base main)
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
+      - name: Attempt merge without review
+        id: merge
+        run: |
+          if gh pr merge "${{ steps.create.outputs.pr_url }}" --squash --delete-branch; then
+            echo "result=MERGED" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=BLOCKED" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
+      - name: Report
+        run: |
+          echo "## Bypass probe result: ${{ steps.merge.outputs.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "PR: ${{ steps.create.outputs.pr_url }}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Cleanup PR if still open
+        if: always() && steps.merge.outputs.result != 'MERGED'
+        run: |
+          gh pr close "${{ steps.create.outputs.pr_url }}" --delete-branch || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
