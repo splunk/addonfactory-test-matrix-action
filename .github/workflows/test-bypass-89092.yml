@@ -14,11 +14,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.SA_GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SA_GPG_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
       - name: Create throwaway commit and PR
         id: create
         run: |
           git config --global user.email ${{ secrets.GH_USER_EMAIL }}
           git config --global user.name ${{ secrets.GH_USER_ADMIN }}
+          git config --global commit.gpgsign true
 
           BRANCH_NAME="test/bypass-probe-$GITHUB_RUN_ID"
           git checkout -b "$BRANCH_NAME"
