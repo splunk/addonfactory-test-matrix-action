@@ -37,15 +37,26 @@ jobs:
           PR_URL=$(gh pr create --title "test: bypass probe (ADDON-89092, will be closed)" \
             --body "Throwaway PR verifying whether srv-rr-github-token's bypass_pull_request_allowances lets GH_TOKEN_ADMIN merge without review. Safe to close/delete if left open." \
             --head "$BRANCH_NAME" --base main)
+          PR_NUM=$(echo "$PR_URL" | grep -o '[0-9]*$')
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+          echo "pr_num=$PR_NUM" >> "$GITHUB_OUTPUT"
           echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
+      - name: Inspect PR mergeable state
+        id: inspect
+        run: |
+          sleep 15
+          gh api repos/${{ github.repository }}/pulls/${{ steps.create.outputs.pr_num }} \
+            --jq '{mergeable, mergeable_state, rebaseable}' | tee mergeable.json
+          echo "## Mergeable state" >> "$GITHUB_STEP_SUMMARY"
+          cat mergeable.json >> "$GITHUB_STEP_SUMMARY"
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
       - name: Attempt merge without review
         id: merge
         run: |
-          sleep 15
-          if gh api repos/${{ github.repository }}/pulls/$(echo "${{ steps.create.outputs.pr_url }}" | grep -o '[0-9]*$')/merge \
+          if gh api repos/${{ github.repository }}/pulls/${{ steps.create.outputs.pr_num }}/merge \
               -X PUT -f merge_method=squash > merge_result.json 2> merge_error.txt; then
             echo "result=MERGED" >> "$GITHUB_OUTPUT"
           else
