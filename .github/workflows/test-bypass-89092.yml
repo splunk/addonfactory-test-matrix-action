@@ -12,6 +12,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Create throwaway commit and PR
         id: create
         run: |
@@ -35,10 +37,12 @@ jobs:
       - name: Attempt merge without review
         id: merge
         run: |
-          if gh pr merge "${{ steps.create.outputs.pr_url }}" --squash --delete-branch; then
+          if gh api repos/${{ github.repository }}/pulls/$(echo "${{ steps.create.outputs.pr_url }}" | grep -o '[0-9]*$')/merge \
+              -X PUT -f merge_method=squash > merge_result.json 2> merge_error.txt; then
             echo "result=MERGED" >> "$GITHUB_OUTPUT"
           else
             echo "result=BLOCKED" >> "$GITHUB_OUTPUT"
+            cat merge_error.txt
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
