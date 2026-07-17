@@ -37,6 +37,7 @@ jobs:
       - name: Attempt merge without review
         id: merge
         run: |
+          sleep 15
           if gh api repos/${{ github.repository }}/pulls/$(echo "${{ steps.create.outputs.pr_url }}" | grep -o '[0-9]*$')/merge \
               -X PUT -f merge_method=squash > merge_result.json 2> merge_error.txt; then
             echo "result=MERGED" >> "$GITHUB_OUTPUT"
