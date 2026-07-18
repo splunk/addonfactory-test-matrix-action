@@ -78,3 +78,32 @@ jobs:
               --title "fix: bump Splunk version" --fill --head "$BRANCH_NAME" || true
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
+      - name: Auto-merge Splunk version PR
+        run: |
+          BRANCH_NAME="fix/update-splunk-version"
+          PR_NUMBER=$(gh pr list \
+              --repo "$GITHUB_REPOSITORY" \
+              --head "$BRANCH_NAME" \
+              --base main \
+              --state open \
+              --json number \
+              --jq '.[0].number')
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No open PR for $BRANCH_NAME; nothing to merge (no new Splunk version)."
+            exit 0
+          fi
+          echo "Merging PR #$PR_NUMBER as a squash (patch release)."
+          # Wait for GitHub to compute mergeable state after the just-created PR.
+          for attempt in 1 2 3 4 5 6; do
+            if gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/merge" \
+                -X PUT -f merge_method=squash; then
+              echo "Merged PR #$PR_NUMBER."
+              exit 0
+            fi
+            echo "Merge not ready yet (attempt $attempt); waiting 10s..."
+            sleep 10
+          done
+          echo "::error::Failed to auto-merge PR #$PR_NUMBER after retries."
+          exit 1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
