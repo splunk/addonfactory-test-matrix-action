@@ -46,6 +46,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN_ADMIN }}
       - uses: actions/setup-python@v5
         with:
           python-version: 3.12
@@ -61,49 +63,18 @@ jobs:
           passphrase: ${{ secrets.SA_GPG_PASSPHRASE }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: Create PR with new version
+      - name: Commit and push new version
         run: |
           git config --global user.email ${{ secrets.GH_USER_EMAIL }}
           git config --global user.name ${{ secrets.GH_USER_ADMIN }}
           git config --global commit.gpgsign true
 
-          BRANCH_NAME="fix/update-splunk-version"
-          ( git checkout "$BRANCH_NAME"  && git checkout main && git branch -D "$BRANCH_NAME" ) || true
-          git checkout -B "$BRANCH_NAME"
-          git add . || exit 1
-          git commit -am "fix: update Splunk version" || true
-          git push -f --set-upstream origin "$BRANCH_NAME" || true
-          sleep 10s
-          gh pr create \
-              --title "fix: bump Splunk version" --fill --head "$BRANCH_NAME" || true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
-      - name: Auto-merge Splunk version PR
-        run: |
-          BRANCH_NAME="fix/update-splunk-version"
-          PR_NUMBER=$(gh pr list \
-              --repo "$GITHUB_REPOSITORY" \
-              --head "$BRANCH_NAME" \
-              --base main \
-              --state open \
-              --json number \
-              --jq '.[0].number // empty')
-          if [ -z "$PR_NUMBER" ]; then
-            echo "No open PR for $BRANCH_NAME; nothing to merge (no new Splunk version)."
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No new Splunk version; nothing to commit."
             exit 0
           fi
-          echo "Merging PR #$PR_NUMBER as a squash (patch release)."
-          # Wait for GitHub to compute mergeable state after the just-created PR.
-          for attempt in 1 2 3 4 5 6; do
-            if gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/merge" \
-                -X PUT -f merge_method=squash; then
-              echo "Merged PR #$PR_NUMBER."
-              exit 0
-            fi
-            echo "Merge not ready yet (attempt $attempt); waiting 10s..."
-            sleep 10
-          done
-          echo "::error::Failed to auto-merge PR #$PR_NUMBER after retries."
-          exit 1
+          git add .
+          git commit -m "fix: update Splunk version"
+          git push origin HEAD:main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
