@@ -46,6 +46,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN_ADMIN }}
       - uses: actions/setup-python@v5
         with:
           python-version: 3.12
@@ -61,20 +63,18 @@ jobs:
           passphrase: ${{ secrets.SA_GPG_PASSPHRASE }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: Create PR with new version
+      - name: Commit and push new version
         run: |
           git config --global user.email ${{ secrets.GH_USER_EMAIL }}
           git config --global user.name ${{ secrets.GH_USER_ADMIN }}
           git config --global commit.gpgsign true
 
-          BRANCH_NAME="fix/update-splunk-version"
-          ( git checkout "$BRANCH_NAME"  && git checkout main && git branch -D "$BRANCH_NAME" ) || true
-          git checkout -B "$BRANCH_NAME"
-          git add . || exit 1
-          git commit -am "fix: update Splunk version" || true
-          git push -f --set-upstream origin "$BRANCH_NAME" || true
-          sleep 10s
-          gh pr create \
-              --title "fix: bump Splunk version" --fill --head "$BRANCH_NAME" || true
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No new Splunk version; nothing to commit."
+            exit 0
+          fi
+          git add .
+          git commit -m "fix: update Splunk version"
+          git push origin HEAD:main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_ADMIN }}
