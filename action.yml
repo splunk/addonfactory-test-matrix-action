@@ -19,4 +19,4 @@ outputs:
     description: 'JSON array of supported UI vendor versions'
 runs:
   using: "docker"
-  image: 'docker://ghcr.io/splunk/addonfactory-test-matrix-action/addonfactory-test-matrix-action:v3.3.1'
+  image: "Dockerfile"
